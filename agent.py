@@ -255,3 +255,12 @@ class Agent:
                                                            self.y+self.radius*sin(self.angle)), angle=self.angle)
         else:
             return []
+
+    def take_bonus(self,
+                   new_hp=0,
+                   new_armor=0,
+                   new_ammo=[0, 0, 0]):
+        self.hp = min(new_hp+self.hp, self.max_hp)
+        self.arm = min(new_armor+self.arm, self.max_arm)
+        for i in range(3):
+            self.ammo[i] += new_ammo[i]

@@ -2,6 +2,7 @@ from walls import Column, Wall
 from agent import Agent, agent_keys
 from time import sleep
 from ammo import Bullet, Rocket, Shell
+from bonuses import *
 # from exceptions import MapLoadingError
 import pygame
 from math import pi
@@ -14,6 +15,7 @@ class World:
         self.obstacles = []
         self.agents = []
         self.bullets = []
+        self.bonuses = []
         self.ready = False
         self.background_color = pygame.Color('#101010')
         self.bg = None
@@ -52,12 +54,16 @@ class World:
             i.draw(screen)
         for i in self.bullets:
             i.draw(screen)
+        for i in self.bonuses:
+            i.draw(screen)
 
     def tick(self, player=0):
         self.time += 1
+        if self.time % 100 == 1:
+            self.bonuses.append(RocketsPack((randint(300, 600), randint(200, 400))))
         self.agents[player].think()
         new_bullets = self.agents[player].update(self.obstacles)
-        self.bullets+=new_bullets
+        self.bullets += new_bullets
         bullets_to_drop = []
         for i in range(len(self.bullets)):
             self.bullets[i].update(self.obstacles, self.agents)
@@ -65,5 +71,13 @@ class World:
                 bullets_to_drop = [i] + bullets_to_drop
         for i in bullets_to_drop:
             self.bullets = self.bullets[:i] + self.bullets[i+1:]
+
+        bonuses_to_drop = []
+        for i in range(len(self.bonuses)):
+            self.bonuses[i].update(self.agents)
+            if self.bonuses[i].taken:
+                bonuses_to_drop = [i] + bonuses_to_drop
+        for i in bonuses_to_drop:
+            self.bonuses = self.bonuses[:i] + self.bonuses[i+1:]
         sleep(0.01)
 
