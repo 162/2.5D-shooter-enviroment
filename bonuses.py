@@ -38,8 +38,8 @@ class BulletsPack(Bonus):
                        new_hp=0,
                        new_armor=0,
                        new_ammo=[10, 0, 0],
-                       radius=3,
-                       color='#500000')
+                       radius=4,
+                       color='#b03030')
 
 
 class ShellsPack(Bonus):
@@ -48,8 +48,8 @@ class ShellsPack(Bonus):
                        new_hp=0,
                        new_armor=0,
                        new_ammo=[0, 5, 0],
-                       radius=3,
-                       color='#500000')
+                       radius=4,
+                       color='#909030')
 
 
 class RocketsPack(Bonus):
@@ -57,9 +57,9 @@ class RocketsPack(Bonus):
         Bonus.__init__(self, pos[0], pos[1],
                        new_hp=0,
                        new_armor=0,
-                       new_ammo=[0, 0, 2],
-                       radius=3,
-                       color='#500000')
+                       new_ammo=[0, 0, 1],
+                       radius=4,
+                       color='#5050b0')
 
 
 class Medkit(Bonus):
@@ -68,8 +68,8 @@ class Medkit(Bonus):
                        new_hp=50,
                        new_armor=0,
                        new_ammo=[0, 0, 0],
-                       radius=5,
-                       color='#500000')
+                       radius=6,
+                       color='#900000')
 
 
 class Vest(Bonus):
@@ -78,5 +78,8 @@ class Vest(Bonus):
                        new_hp=0,
                        new_armor=50,
                        new_ammo=[0, 0, 0],
-                       radius=5,
-                       color='#005000')
+                       radius=6,
+                       color='#006000')
+
+
+all_bonuses = [BulletsPack, ShellsPack, RocketsPack, Medkit, Vest]
