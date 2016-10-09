@@ -1,7 +1,7 @@
 from constants import *
 import pygame
 from math import sin, cos, pi
-from weapons import pistol, shotgun, rocket_launcher, machine_gun
+from weapons import Pistol, Shotgun, RocketLauncher, MachineGun
 
 agent_keys = ['max_velocity',
               'turn_speed',
@@ -69,7 +69,13 @@ def keyboard_handler():
     return actions
 
 
-modes = {'Player': keyboard_handler}
+def skip_handler():
+    return {}
+
+modes = {'Player': keyboard_handler,
+         'Target': skip_handler}
+
+last_id = 0
 
 
 class Agent:
@@ -85,6 +91,10 @@ class Agent:
                  color='#303030',
                  radius=10):
 
+        global last_id
+        last_id += 1
+        self.id = last_id
+
         # name could be added any time
         self.name = 'John'
 
@@ -95,19 +105,28 @@ class Agent:
         self.max_arm = max_armor
 
         # current stats
-        self.angle = starting_angle
+        self.spawn_angle = starting_angle
+        self.angle = self.spawn_angle
         self.vx, self.vy = 0, 0
         self.v = 0
         self.hp = self.max_hp
         self.arm = 0
-        self.x, self.y = spawn_point
+        self.spawn_point = spawn_point
+        self.x, self.y = self.spawn_point
 
         # weaponary
         self.active_weapon = PISTOL
         self.active_ammo = BULLETS
         self.ammo_needed_to_shoot = 1
-        self.weapons = [pistol, shotgun, rocket_launcher, machine_gun]
+        self.weapons = [Pistol(self.id),
+                        Shotgun(self.id),
+                        RocketLauncher(self.id),
+                        MachineGun(self.id)]
         self.ammo = [10, 5, 1]
+
+        self.is_alive = True
+        self.killed_by = -1
+        self.to_resurrect = -1
 
         # visualiser options
         self.color = pygame.Color(color)
@@ -129,6 +148,10 @@ class Agent:
         self.mode = 'Undefined'
         self.decision_function = None
 
+        # stats
+        self.kills = 0
+        self.deaths = 0
+
     def set_mode(self, mode):
         """
         Sets mode by name (see modes dictionary)
@@ -141,13 +164,21 @@ class Agent:
             self.mode = mode
             self.decision_function = modes[mode]
 
-    def take_damage(self, amount):
+    def reset(self):
+        self.angle = self.spawn_angle
+        self.hp = self.max_hp
+        self.arm = 0
+        self.x, self.y = self.spawn_point
+        self.ammo = [10, 5, 1]
+        self.is_alive = True
+        self.killed_by = -1
+        self.to_resurrect = -1
+
+    def take_damage(self, amount, dealer):
         """
         When something deals damage to agent, it takes up to half damage by reducing
-        it`s armor value and rest lowers his health. If agent dies, this method raises
-        ValueError.
-
-        TODO: create special exception for agent death
+        it`s armor value and rest lowers his health. If agent dies, this method writes
+        about his death to journal.
         """
         to_armor = min(self.arm, amount/2)
         to_hp = amount - to_armor
@@ -155,7 +186,13 @@ class Agent:
         self.hp -= to_hp
         if self.hp <= 0:
             print self.name, 'is dead!'
-            raise ValueError
+            self.deaths += 1
+            if dealer != self.id:
+                self.killed_by = dealer
+            else:
+                self.killed_by = 0
+            self.is_alive = False
+            self.to_resurrect = RESURRECTION_DELAY
 
     def draw(self, screen):
         """
@@ -234,19 +271,16 @@ class Agent:
         if self.actions['to_take_pistol']:
             self.active_weapon = PISTOL
             self.active_ammo = BULLETS
-            self.ammo_needed_to_shoot = 1
         if self.actions['to_take_shotgun']:
             self.active_weapon = SHOTGUN
             self.active_ammo = SHELLS
-            self.ammo_needed_to_shoot = 5
         if self.actions['to_take_rocket_launcher']:
             self.active_weapon = ROCKET_LAUNCHER
             self.active_ammo = ROCKETS
-            self.ammo_needed_to_shoot = 1
         if self.actions['to_take_machine_gun']:
             self.active_weapon = MACHINE_GUN
             self.active_ammo = BULLETS
-            self.ammo_needed_to_shoot = 1
+        self.ammo_needed_to_shoot = self.weapons[self.active_weapon].per_shot
 
         if self.actions['to_shoot'] and self.ammo[self.active_ammo] >= self.ammo_needed_to_shoot:
             if self.weapons[self.active_weapon].cooling == 0:

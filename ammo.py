@@ -8,7 +8,7 @@ def dst(x1, y1, x2, y2):
 
 
 class Ammo:
-    def __init__(self, pos, angle, speed, damage, burst, time_to_live, radius, color):
+    def __init__(self, pos, angle, speed, damage, burst, time_to_live, radius, color, owner):
         self.speed = speed
         self.damage = damage
         self.burst = burst
@@ -17,13 +17,14 @@ class Ammo:
         self.angle = angle
         self.radius = radius
         self.color = pygame.Color(color)
+        self.owner_id = owner
         self.exploded = False
 
     def get_burst(self):
         return self.burst
 
     def microtick(self, obstacles, agents):
-        boom = self.alive<=0
+        boom = self.alive <= 0
         self.x += DEFAULT_BULLETS_SPEED_PER_FRAME*cos(self.angle)
         self.y += DEFAULT_BULLETS_SPEED_PER_FRAME*sin(self.angle)
         if not boom:
@@ -32,14 +33,14 @@ class Ammo:
                     boom = True
         if not boom:
             for i in agents:
-                if dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
+                if i.is_alive and self.owner_id != i.id and dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
                     boom = True
         # deal damage to everyone who is in burst radius
         if boom:
             self.alive = 0
             for i in agents:
-                if dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
-                    i.take_damage(self.damage)
+                if i.is_alive and dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
+                    i.take_damage(self.damage, self.owner_id)
             self.exploded = True
 
     def update(self, obstacles, agents):
@@ -63,15 +64,15 @@ class Ammo:
 
 
 class Bullet(Ammo):
-    def __init__(self, pos, angle):
-        Ammo.__init__(self, pos, angle, 10, 60, 6, 50, 6, '#ff0000')
+    def __init__(self, pos, angle, owner):
+        Ammo.__init__(self, pos, angle, 10, 60, 6, 50, 6, '#ff0000', owner)
 
 
 class Shell(Ammo):
-    def __init__(self, pos, angle):
-        Ammo.__init__(self, pos, angle, 5, 20, 6, 200, 6, '#999900')
+    def __init__(self, pos, angle, owner):
+        Ammo.__init__(self, pos, angle, 5, 40, 6, 200, 6, '#999900', owner)
 
 
 class Rocket(Ammo):
-    def __init__(self, pos, angle):
-        Ammo.__init__(self, pos, angle, 1, 150, 20, 200, 10, '#0000ff')
+    def __init__(self, pos, angle, owner):
+        Ammo.__init__(self, pos, angle, 1, 150, 20, 200, 10, '#0000ff', owner)

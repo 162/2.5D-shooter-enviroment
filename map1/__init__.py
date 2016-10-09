@@ -1,4 +1,4 @@
-map_size = (1080, 720)
+map_size = [1080, 720]
 
 # walls color
 clr = '#888888'
@@ -30,6 +30,16 @@ map_agents = [{'max_velocity': 1.2,
                'starter_weapon_pack': None,
                'starter_ammo_pack': None,
                'color': '#559955',
+               'radius': 12},
+              {'max_velocity': 1.2,
+               'turn_speed': 0.05,
+               'max_health': 100,
+               'max_armor': 100,
+               'spawn_point': (1000, 100),
+               'starting_angle': 0,
+               'starter_weapon_pack': None,
+               'starter_ammo_pack': None,
+               'color': '#555599',
                'radius': 12}]
 
 # Bonuses spawn points with timeouts

@@ -57,7 +57,7 @@ def draw_machine_gun(screen, pos, angle):
 
 
 class Weapon:
-    def __init__(self, ammo_id, ammo, inaccuracy, per_shot, cooldown, draw_function):
+    def __init__(self, ammo_id, ammo, inaccuracy, per_shot, cooldown, draw_function, owner):
         self.ammo_id = ammo_id
         self.ammo = ammo
         self.cooldown = cooldown
@@ -65,6 +65,7 @@ class Weapon:
         self.inaccuracy = inaccuracy
         self.per_shot = per_shot
         self.drawfn = draw_function
+        self.owner_id = owner
 
     def update(self):
         if self.cooling:
@@ -78,11 +79,25 @@ class Weapon:
             return []
         else:
             self.cooling = self.cooldown
-            pos = [pos[0]+21*cos(angle), pos[1]+21*sin(angle)]
-            return [self.ammo(pos, angle+(random()-random())*self.inaccuracy) for i in range(self.per_shot)]
+            pos = [pos[0]+5*cos(angle), pos[1]+5*sin(angle)]
+            return [self.ammo(pos, angle+(random()-random())*self.inaccuracy, self.owner_id) for i in range(self.per_shot)]
 
 
-pistol = Weapon(BULLETS, Bullet, 0.01, 1, 30, draw_pistol)
-shotgun = Weapon(SHELLS, Shell, 0.25, 3, 100, draw_shotgun)
-rocket_launcher = Weapon(ROCKETS, Rocket, 0.03, 1, 200, draw_rocket_launcher)
-machine_gun = Weapon(BULLETS, Bullet, 0.05, 1, 10, draw_machine_gun)
+class Pistol(Weapon):
+    def __init__(self, owner):
+        Weapon.__init__(self, BULLETS, Bullet, 0.01, 1, 30, draw_pistol, owner)
+
+
+class Shotgun(Weapon):
+    def __init__(self, owner):
+        Weapon.__init__(self, SHELLS, Shell, 0.25, 5, 100, draw_shotgun, owner)
+
+
+class RocketLauncher(Weapon):
+    def __init__(self, owner):
+        Weapon.__init__(self, ROCKETS, Rocket, 0.03, 1, 200, draw_rocket_launcher, owner)
+
+
+class MachineGun(Weapon):
+    def __init__(self, owner):
+        Weapon.__init__(self, BULLETS, Bullet, 0.05, 1, 10, draw_machine_gun, owner)
