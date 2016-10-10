@@ -37,3 +37,13 @@ STAT_ROCKETS = 10
 
 # agents resurrect after this amount of ticks
 RESURRECTION_DELAY = FPS*3
+
+# Layers of observation
+OBSTACLES_LAYER = 0
+ENEMIES_LAYER = 1
+MEDKITS_LAYER = 2
+VESTS_LAYER = 3
+BULLETS_LAYER = 4
+SHELLS_LAYER = 5
+ROCKETS_LAYER = 6
+MISSILES_LAYER = 7

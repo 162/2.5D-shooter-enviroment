@@ -15,7 +15,7 @@ agent_keys = ['max_velocity',
               'radius']
 
 
-def keyboard_handler():
+def keyboard_handler(observation):
     actions = {}
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -69,7 +69,7 @@ def keyboard_handler():
     return actions
 
 
-def skip_handler():
+def skip_handler(observation):
     return {}
 
 modes = {'Player': keyboard_handler,
@@ -174,6 +174,9 @@ class Agent:
         self.killed_by = -1
         self.to_resurrect = -1
 
+    def distance_to_point(self, x, y):
+        return ((self.x-x)**2 + (self.y-y)**2)**0.5 - self.radius
+
     def take_damage(self, amount, dealer):
         """
         When something deals damage to agent, it takes up to half damage by reducing
@@ -215,16 +218,16 @@ class Agent:
                                                            self.y+self.radius*sin(self.angle)),
                                               angle=self.angle)
 
-    def think(self):
+    def think(self, observation):
         """
         Method to decide what next actions are going to be applied
 
         TODO: Throw special exception in case mode is not set
         """
         if self.mode == 'Undefined':
-            raise ValueError
+            raise ValueError('Decision function was not defined!')
         else:
-            action_updates = self.decision_function()
+            action_updates = self.decision_function(observation)
             for i in action_updates:
                 self.actions[i] = action_updates[i]
 

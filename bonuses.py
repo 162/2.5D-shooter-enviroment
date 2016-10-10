@@ -16,8 +16,11 @@ class Bonus:
         self.radius = radius
         self.color = pygame.Color(color)
 
+    def distance_to_point(self, x, y):
+        return ((self.x-x)**2 + (self.y-y)**2)**0.5 - self.radius
+
     def distance_to_agent(self, agent):
-        return ((self.x-agent.x)**2+(self.y-agent.y)**2)**0.5
+        return self.distance_to_point(agent.x, agent.y)
 
     def update(self, agents):
         for i in agents:

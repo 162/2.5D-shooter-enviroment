@@ -23,6 +23,9 @@ class Ammo:
     def get_burst(self):
         return self.burst
 
+    def distance_to_point(self, x, y):
+        return ((self.x-x)**2 + (self.y-y)**2)**0.5 - self.radius
+
     def microtick(self, obstacles, agents):
         boom = self.alive <= 0
         self.x += DEFAULT_BULLETS_SPEED_PER_FRAME*cos(self.angle)

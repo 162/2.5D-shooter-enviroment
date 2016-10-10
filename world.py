@@ -4,14 +4,14 @@ from time import sleep
 from bonuses import *
 # from exceptions import MapLoadingError
 import pygame
-from math import pi
+from math import pi, sin, cos
 from random import random, randint
 from time import time
 from constants import *
+import numpy as np
 
 
 journal = []
-
 
 stats_names = ['Pos', 'Name', 'K', 'D', 'K-D', 'K/D', 'HP', 'A', 'B', 'S', 'R']
 
@@ -41,6 +41,13 @@ class World:
         self.time = 0
         self.bonus_spawner = []
         self.stats = []
+
+        self.angle_shift = 0.125
+        self.rays = 17
+        self.critical_distance = 5
+        self.layers = 8
+        self.vision_range = 100
+        self.distance_shift = 10
 
     def load(self):
         map_size, map_agents, map_walls, map_columns, map_bonuses = None, None, None, None, None
@@ -126,6 +133,100 @@ class World:
             i.draw(screen)
         self.draw_stats(screen)
 
+    def get_all_collisions(self, x, y, r, ai, walls_, enemies_, bonus_medkits_, bonus_vests_,
+                           bonus_bullets_, bonus_shells_, bonus_rockets_, flying_bullets_):
+        s = time()
+        collisions = [False]*8
+        walls = [i.distance_to_point(x, y)<r for i in walls_]
+        if walls:
+            collisions[OBSTACLES_LAYER] = max(walls)
+        enemies = [i.distance_to_point(x, y)<r for i in enemies_]
+        if enemies:
+            collisions[ENEMIES_LAYER] = max(enemies)
+        bonus_medkits = [i.distance_to_point(x, y)<r for i in bonus_medkits_]
+        if bonus_medkits:
+            collisions[MEDKITS_LAYER] = max(bonus_medkits)
+        bonus_vests = [i.distance_to_point(x, y)<r for i in bonus_vests_]
+        if bonus_vests:
+            collisions[VESTS_LAYER] = max(bonus_vests)
+        bonus_bullets = [i.distance_to_point(x, y)<r for i in bonus_bullets_]
+        if bonus_bullets:
+            collisions[BULLETS_LAYER] = max(bonus_bullets)
+        bonus_shells = [i.distance_to_point(x, y)<r for i in bonus_shells_]
+        if bonus_shells:
+            collisions[SHELLS_LAYER] = max(bonus_shells)
+        bonus_rockets = [i.distance_to_point(x, y)<r for i in bonus_rockets_]
+        if bonus_rockets:
+            collisions[ROCKETS_LAYER] = max(bonus_rockets)
+        flying_bullets = [i.distance_to_point(x, y)<r for i in flying_bullets_]
+        if flying_bullets:
+            collisions[MISSILES_LAYER] = max(flying_bullets)
+        journal.append(time()-s)
+        return collisions
+
+    def get_observation(self, agent_index):
+        x0 = self.agents[agent_index].x
+        y0 = self.agents[agent_index].y
+        a0 = self.agents[agent_index].angle
+
+        angles = np.arange(-1, 1.01, self.angle_shift)
+        observation = np.zeros(shape=(self.layers, self.rays))
+
+        walls_ = [(i.distance_to_point(x0, y0)<2*self.vision_range) for i in self.obstacles]
+        walls = []
+        for i in range(len(walls_)):
+            if walls_[i]:
+                walls.append(self.obstacles[i])
+
+        enemies_ = [(i.id!=self.agents[agent_index].id and i.is_alive) for i in self.agents]
+        enemies = []
+        for i in range(len(enemies_)):
+            if enemies_[i]:
+                enemies.append(self.agents[i])
+        bonus_medkits_ = [(i.new_hp>0) for i in self.bonuses]
+        bonus_medkits = []
+        for i in range(len(bonus_medkits_)):
+            if bonus_medkits_[i]:
+                bonus_medkits.append(self.bonuses[i])
+        bonus_vests_ = [(i.new_armor>0) for i in self.bonuses]
+        bonus_vests = []
+        for i in range(len(bonus_vests_)):
+            if bonus_vests_[i]:
+                bonus_vests.append(self.bonuses[i])
+        bonus_bullets_ = [(i.new_ammo[BULLETS]>0) for i in self.bonuses]
+        bonus_bullets = []
+        for i in range(len(bonus_bullets_)):
+            if bonus_bullets_[i]:
+                bonus_bullets.append(self.bonuses[i])
+        bonus_shells_ = [(i.new_ammo[SHELLS]>0) for i in self.bonuses]
+        bonus_shells = []
+        for i in range(len(bonus_shells_)):
+            if bonus_shells_[i]:
+                bonus_shells.append(self.bonuses[i])
+        bonus_rockets_ = [(i.new_ammo[ROCKETS]>0) for i in self.bonuses]
+        bonus_rockets = []
+        for i in range(len(bonus_rockets_)):
+            if bonus_rockets_[i]:
+                bonus_rockets.append(self.bonuses[i])
+        flying_bullets_ = [(i.owner_id!=self.agents[agent_index].id) for i in self.bullets]
+        flying_bullets = []
+        for i in range(len(flying_bullets_)):
+            if flying_bullets_[i]:
+                flying_bullets.append(self.bullets[i])
+
+        for a in range(self.rays):
+            for d in range(1, self.vision_range/self.distance_shift):
+                px, py = x0+d*self.distance_shift*cos(a0+angles[a]), y0+d*self.distance_shift*sin(a0+angles[a])
+                collisions = self.get_all_collisions(px, py, self.critical_distance, self.agents[agent_index].id, walls,
+                                                     enemies, bonus_medkits, bonus_vests, bonus_bullets,
+                                                     bonus_shells, bonus_rockets, flying_bullets)
+                for i in range(self.layers):
+                    if collisions[i] and observation[i][a]==0:
+                        observation[i][a] = float(self.vision_range-d*self.distance_shift)/self.vision_range
+                if collisions[0]:
+                    break
+        return observation
+
     def tick(self):
         start = time()
         self.time += 1
@@ -146,9 +247,11 @@ class World:
                     bonus['spawn_next_in'] = bonus['cooldown']
 
         killers = []
+        i = 0
         for agent in self.agents:
             if agent.is_alive:
-                agent.think()
+                obs = self.get_observation(i)
+                agent.think(obs)
                 new_bullets = agent.update(self.obstacles)
                 self.bullets += new_bullets
             elif agent.to_resurrect:
@@ -158,6 +261,7 @@ class World:
                     agent.killed_by = 0
             else:
                 agent.reset()
+            i += 1
 
         for i in killers:
             self.agents[i-1].kills+=1
@@ -185,5 +289,5 @@ class World:
         if time_taken < frame_time:
             sleep(frame_time-time_taken)
         else:
-            print time_taken
+            print time_taken, sum(journal)/len(journal)
 
