@@ -161,10 +161,16 @@ class World:
         flying_bullets = [i.distance_to_point(x, y)<r for i in flying_bullets_]
         if flying_bullets:
             collisions[MISSILES_LAYER] = max(flying_bullets)
-        journal.append(time()-s)
+        #journal.append(time()-s)
         return collisions
 
     def get_observation(self, agent_index):
+        """
+        This method returns what agent with given index can observe.
+        TODO: rewrite this code in order to make it fast and readable.
+        :param agent_index:
+        :return:
+        """
         x0 = self.agents[agent_index].x
         y0 = self.agents[agent_index].y
         a0 = self.agents[agent_index].angle
@@ -172,7 +178,7 @@ class World:
         angles = np.arange(-1, 1.01, self.angle_shift)
         observation = np.zeros(shape=(self.layers, self.rays))
 
-        walls_ = [(i.distance_to_point(x0, y0)<2*self.vision_range) for i in self.obstacles]
+        walls_ = [(i.distance_to_point(x0, y0)<1.1*self.vision_range) for i in self.obstacles]
         walls = []
         for i in range(len(walls_)):
             if walls_[i]:
@@ -289,5 +295,5 @@ class World:
         if time_taken < frame_time:
             sleep(frame_time-time_taken)
         else:
-            print time_taken, sum(journal)/len(journal)
+            print 'too slow!', time_taken, 'instead of', frame_time
 

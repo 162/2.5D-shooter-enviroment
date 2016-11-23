@@ -20,7 +20,7 @@ VEST = 4
 STATS_WIDTH = 400
 
 # Runtime constants
-FPS = 30
+FPS = 20
 
 # Stats indexes
 STAT_POS = 0

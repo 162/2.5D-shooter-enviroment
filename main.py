@@ -1,7 +1,11 @@
 from world import World
 import pygame
 from constants import STATS_WIDTH
+import cProfile
 
+
+profiler = cProfile.Profile()
+profiler.enable()
 
 w = World(map_name='map1')
 w.load()
@@ -20,6 +24,10 @@ w.agents[1].set_mode('Target')
 w.agents[1].name = 'Target1'
 
 while 1:
-    w.tick()
-    w.draw(screen)
-    pygame.display.update()
+    try:
+        w.tick()
+        w.draw(screen)
+        pygame.display.update()
+    except:
+        profiler.print_stats(sort=1)
+        break
