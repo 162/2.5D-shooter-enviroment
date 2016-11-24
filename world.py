@@ -71,7 +71,7 @@ class World:
                 self.obstacles.append(Column(col[0], col[1], col[2]))
 
             for wall in map_walls:
-                self.obstacles.append(Wall(wall[0], wall[1], wall[2]))
+                self.obstacles.append(Wall(center_pos=wall[0], width=wall[1], height=wall[2], color=wall[3]))
 
             for i in range(len(all_bonuses)):
                 for bonus in map_bonuses[i]:

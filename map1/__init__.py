@@ -5,12 +5,16 @@ clr = '#888888'
 
 # walls and columns positions
 map_walls = []
-for i in range(10, 1080, 20):
-    map_walls.append(((i, 10), 20, clr))
-    map_walls.append(((i, 710), 20, clr))
-for i in range(30, 700, 20):
-    map_walls.append(((10, i), 20, clr))
-    map_walls.append(((1070, i), 20, clr))
+map_walls.append(((540, 10), 1080, 20, clr))
+map_walls.append(((540, 710), 1080, 20, clr))
+map_walls.append(((1070, 360), 20, 720, clr))
+map_walls.append(((10, 360), 20, 720, clr))
+#for i in range(10, 1080, 20):
+#    map_walls.append(((i, 10), 20, 20, clr))
+#    map_walls.append(((i, 710), 20, 20, clr))
+#for i in range(30, 700, 20):
+#    map_walls.append(((10, i), 20, 20, clr))
+#    map_walls.append(((1070, i), 20, 20, clr))
 map_columns = [((150, 150), 30, clr),
                ((930, 150), 30, clr),
                ((930, 570), 30, clr),

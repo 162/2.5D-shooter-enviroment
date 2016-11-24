@@ -24,10 +24,11 @@ w.agents[1].set_mode('Target')
 w.agents[1].name = 'Target1'
 
 while 1:
-    try:
+    #try:
+    if 1:
         w.tick()
         w.draw(screen)
         pygame.display.update()
-    except:
-        profiler.print_stats(sort=1)
-        break
+    #except:
+    #    profiler.print_stats(sort=1)
+    #    break
