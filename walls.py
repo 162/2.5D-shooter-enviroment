@@ -44,10 +44,10 @@ class Wall:
                          self.rect)
 
     def get_corners(self):
-        return [(self.x-self.width/2, self.y-self.height),
-                (self.x+self.width/2, self.y-self.height),
-                (self.x+self.width/2, self.y+self.height),
-                (self.x-self.width/2, self.y+self.height)]
+        return [(self.x-self.width/2, self.y-self.height/2),
+                (self.x+self.width/2, self.y-self.height/2),
+                (self.x+self.width/2, self.y+self.height/2),
+                (self.x-self.width/2, self.y+self.height/2)]
 
     def get_sides(self):
         corners = self.get_corners()
