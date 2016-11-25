@@ -17,9 +17,9 @@ journal = []
 stats_names = ['Pos', 'Name', 'K', 'D', 'K-D', 'K/D', 'HP', 'A', 'B', 'S', 'R']
 
 
-def render_line(screen, lst, x0, y0):
+def render_line(screen, lst, x0, y0, clr=pygame.Color('#ffffff')):
     deltas = [0, 32, 80, 24, 24, 32, 40, 32, 32, 32, 32]
-    text_color = pygame.Color('#ffffff')
+    text_color = clr
     bg_color = pygame.Color('#101010')
     font = pygame.font.SysFont('timesnewroman', 16)
     for i in range(len(lst)):
@@ -118,7 +118,10 @@ class World:
         self.stats.sort(key=lambda x: -x[STAT_SCORE])
         for agent_stats in self.stats:
             agent_stats[0] = pos
-            render_line(screen, agent_stats, x0, y0+16*pos)
+            for i in self.agents:
+                if i.name == agent_stats[1]:
+                    clr = i.color
+            render_line(screen, agent_stats[:2]+[str(i)[:4] for i in agent_stats[2:]], x0, y0+16*pos, clr)
             pos += 1
 
     def draw(self, screen):
@@ -255,18 +258,21 @@ class World:
 
         killers = []
         i = 0
+        observations = {i.name:0 for i in self.agents}
+        rewards = {i.name:0 for i in self.agents}
         for agent in self.agents:
             if agent.is_alive:
-                obs = self.get_observation(i)
-                agent.think(obs)
+                observations[agent.name] = self.get_observation(i)
+                agent.think(observations[agent.name])
                 new_bullets = agent.update(self.obstacles)
-                reward = 0  # add reward count
-                agent.observe(obs, reward)
+                if rewards[agent.name] == 0:
+                    rewards[agent.name] = 0.1
                 self.bullets += new_bullets
             elif agent.to_resurrect:
                 agent.to_resurrect -= 1
                 if agent.killed_by:
                     killers.append(agent.killed_by)
+                    rewards[agent.name] = -1
                     agent.killed_by = 0
             else:
                 agent.reset()
@@ -274,6 +280,11 @@ class World:
 
         for i in killers:
             self.agents[i-1].kills+=1
+            rewards[self.agents[i-1].name] = 0.1
+
+        for agent in self.agents:
+            if agent.is_alive:
+                agent.observe(observations[agent.name], rewards[agent.name])
 
         bullets_to_drop = []
         for i in range(len(self.bullets)):

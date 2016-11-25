@@ -32,11 +32,15 @@ default_parameters = {'max_velocity': 1.2,
 
 # Agents generating (without decision functions)
 map_agents = [('KeyboardAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy())]
+              ('EmptyAgent', default_parameters.copy()),
+              ('PerceptronAgent', default_parameters.copy())]
 
 
 map_agents[1][1]['color'] = '#559955'
 map_agents[1][1]['spawn_point'] = (1000, 100)
+
+map_agents[2][1]['color'] = '#995555'
+map_agents[2][1]['spawn_point'] = (550, 600)
 
 # Bonuses spawn points with timeouts
 map_bonuses = [[(180, 180, 250), (900, 180, 250), (180, 540, 250), (900, 540, 250)],  # bullet packs

@@ -1,5 +1,14 @@
 from base_agent import BaseAgent
 import pygame
+from keras.layers import Input, Dense, Flatten
+from keras.models import Model
+from keras.optimizers import RMSprop
+import numpy as np
+from random import random
+
+actions_list = ['to_go_forward', 'to_go_back', 'to_go_left', 'to_go_right',
+                'to_turn_left', 'to_turn_right', 'to_shoot', 'to_take_pistol',
+                'to_take_shotgun', 'to_take_rocket_launcher', 'to_take_machine_gun']
 
 
 class KeyboardAgent(BaseAgent):
@@ -106,3 +115,69 @@ class EmptyAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
+
+
+class PerceptronAgent(BaseAgent):
+    def __init__(self,
+                 max_velocity,
+                 turn_speed,
+                 max_health,
+                 max_armor,
+                 spawn_point=(200, 200),
+                 starting_angle=0,
+                 starter_weapon_pack=None,
+                 starter_ammo_pack=None,
+                 color='#303030',
+                 radius=10):
+        BaseAgent.__init__(self,
+                           max_velocity,
+                           turn_speed,
+                           max_health,
+                           max_armor,
+                           spawn_point,
+                           starting_angle,
+                           starter_weapon_pack,
+                           starter_ammo_pack,
+                           color,
+                           radius)
+        input_layer = Input(shape=(8, 17))
+        flattened_input = Flatten()(input_layer)
+        inner_layer = Dense(20, activation='relu')(flattened_input)
+        output_layer = Dense(11, activation='tanh')(inner_layer)
+        self.model = Model(input_layer, output_layer)
+        self.model.compile(RMSprop(),
+                           loss='hinge')
+        self.delta = 1-1e-6
+        self.epsilon = 1
+
+    def think(self, observation):
+        global actions_list
+        observation = np.array(observation)
+        try:
+            r = random()
+            if r < self.epsilon:
+                actions = [random()**2 > 0.95 for i in range(11)]
+            else:
+                observation = observation.reshape((1, 8, 17))
+                pred = self.model.predict(observation)
+                actions = [i > 0 for i in pred[0]]
+            self.actions = {actions_list[i]: actions[i] for i in range(11)}
+            self.epsilon *= self.delta
+        except:
+            pass
+
+    def observe(self, observation, reward):
+        global actions_list
+        observation = np.array(observation)
+        try:
+            observation = observation.reshape((1, 8, 17))
+            actions = np.array([int(self.actions[i])*reward for i in actions_list])
+            actions = actions.reshape((1, 11))
+            self.model.fit(observation, actions, nb_epoch=1, verbose=0)
+        except:
+            pass
+
+
+
+
+
