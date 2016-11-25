@@ -1,6 +1,6 @@
-from world import World
+from engine.world import World
 import pygame
-from constants import STATS_WIDTH
+from engine.constants import STATS_WIDTH
 import cProfile
 
 
@@ -19,8 +19,7 @@ screen = pygame.display.set_mode(DISPLAY, flags)
 
 # This has to be done somewhere inside world loading
 # It`s applying keyboard mode to the only agent
-w.agents[0].set_mode('Player')
-w.agents[1].set_mode('Target')
+
 w.agents[1].name = 'Target1'
 
 while 1:

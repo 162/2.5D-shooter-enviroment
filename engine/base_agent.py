@@ -14,71 +14,10 @@ agent_keys = ['max_velocity',
               'color',
               'radius']
 
-
-def keyboard_handler(observation):
-    actions = {}
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            raise SystemExit
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            raise SystemExit
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-            actions['to_take_pistol'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_1:
-            actions['to_take_pistol'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-            actions['to_take_shotgun'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_2:
-            actions['to_take_shotgun'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-            actions['to_take_rocket_launcher'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_3:
-            actions['to_take_rocket_launcher'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-            actions['to_take_machine_gun'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_4:
-            actions['to_take_machine_gun'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-            actions['to_go_forward'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_w:
-            actions['to_go_forward'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-            actions['to_go_left'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_a:
-            actions['to_go_left'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-            actions['to_go_right'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_d:
-            actions['to_go_right'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-            actions['to_go_back'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_s:
-            actions['to_go_back'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-            actions['to_turn_left'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_q:
-            actions['to_turn_left'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            actions['to_turn_right'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_e:
-            actions['to_turn_right'] = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            actions['to_shoot'] = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
-            actions['to_shoot'] = False
-    return actions
-
-
-def skip_handler(observation):
-    return {}
-
-modes = {'Player': keyboard_handler,
-         'Target': skip_handler}
-
 last_id = 0
 
 
-class Agent:
+class BaseAgent:
     def __init__(self,
                  max_velocity,
                  turn_speed,
@@ -152,18 +91,6 @@ class Agent:
         self.kills = 0
         self.deaths = 0
 
-    def set_mode(self, mode):
-        """
-        Sets mode by name (see modes dictionary)
-
-        TODO: Throw special exception if given name is wrong
-        """
-        global modes
-        if mode in modes:
-            print self.name, 'is now', mode
-            self.mode = mode
-            self.decision_function = modes[mode]
-
     def reset(self):
         self.angle = self.spawn_angle
         self.hp = self.max_hp
@@ -219,17 +146,10 @@ class Agent:
                                               angle=self.angle)
 
     def think(self, observation):
-        """
-        Method to decide what next actions are going to be applied
+        pass
 
-        TODO: Throw special exception in case mode is not set
-        """
-        if self.mode == 'Undefined':
-            raise ValueError('Decision function was not defined!')
-        else:
-            action_updates = self.decision_function(observation)
-            for i in action_updates:
-                self.actions[i] = action_updates[i]
+    def observe(self, observation, reward):
+        pass
 
     def update(self, obstacles):
         """

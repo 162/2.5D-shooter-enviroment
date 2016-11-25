@@ -1,4 +1,4 @@
 #TODO
 
-1. ФПР убрать из параметров и подготовить под оверрайд
-2. Простейшие боты
+1. Add reward calculation (world:263)
+2. Add logger and replay visualizer

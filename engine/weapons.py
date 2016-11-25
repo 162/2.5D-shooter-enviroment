@@ -100,4 +100,4 @@ class RocketLauncher(Weapon):
 
 class MachineGun(Weapon):
     def __init__(self, owner):
-        Weapon.__init__(self, BULLETS, Bullet, 0.05, 1, 10, draw_machine_gun, owner)
+        Weapon.__init__(self, BULLETS, Bullet, 0.1, 1, 10, draw_machine_gun, owner)

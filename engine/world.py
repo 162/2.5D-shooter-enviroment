@@ -1,5 +1,6 @@
 from walls import Column, Wall
-from agent import Agent, agent_keys
+from base_agent import BaseAgent, agent_keys
+from default_agents import *
 from time import sleep
 from bonuses import *
 # from exceptions import MapLoadingError
@@ -61,9 +62,9 @@ class World:
             self.stats_bg.fill(self.background_color)
 
             for params in map_agents:
-                agent_creation = 'self.agents.append(Agent('
+                agent_creation = 'self.agents.append('+params[0]+'('
                 for key in agent_keys:
-                    agent_creation += "params['"+key+"'],"
+                    agent_creation += "params[1]['"+key+"'],"
                 agent_creation = agent_creation[:-1]+'))'
                 exec agent_creation
 
@@ -259,6 +260,8 @@ class World:
                 obs = self.get_observation(i)
                 agent.think(obs)
                 new_bullets = agent.update(self.obstacles)
+                reward = 0  # add reward count
+                agent.observe(obs, reward)
                 self.bullets += new_bullets
             elif agent.to_resurrect:
                 agent.to_resurrect -= 1
