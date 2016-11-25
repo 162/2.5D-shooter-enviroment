@@ -147,7 +147,7 @@ class PerceptronAgent(BaseAgent):
         self.model = Model(input_layer, output_layer)
         self.model.compile(RMSprop(),
                            loss='hinge')
-        self.delta = 1-1e-6
+        self.delta = 1-1e-7
         self.epsilon = 1
 
     def think(self, observation):
