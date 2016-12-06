@@ -204,7 +204,7 @@ class PerceptronAgent(BaseAgent):
         self.model = Model(input_layer, output_layer)
         self.model.compile(RMSprop(),
                            loss='hinge')
-        self.delta = 1-1e-6
+        self.delta = 1-1e-5
         self.epsilon = 1
 
     def think(self, observation):
@@ -268,7 +268,7 @@ class DQNAgent(BaseAgent):
         self.model.compile(RMSprop(),
                            loss='hinge')
 
-        self.delta = 1-1e-6 #decrease coefficient of epsilon-greedy
+        self.delta = 1-1e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
 
         self.max_memory_size = 5000

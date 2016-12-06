@@ -42,22 +42,23 @@ map_agents = [('KeyboardAgent', default_parameters.copy()),
 
 
 map_agents[1][1]['color'] = '#559955'
-map_agents[1][1]['spawn_point'] = (800, 200)
+map_agents[1][1]['spawn_point'] = (750, 250)
 
 map_agents[4][1]['color'] = '#559955'
-map_agents[4][1]['spawn_point'] = (300, 500)
+map_agents[4][1]['spawn_point'] = (350, 450)
 
 map_agents[5][1]['color'] = '#559955'
-map_agents[5][1]['spawn_point'] = (800, 500)
+map_agents[5][1]['spawn_point'] = (750, 450)
 
 map_agents[6][1]['color'] = '#559955'
 map_agents[6][1]['spawn_point'] = (550, 400)
 
 map_agents[2][1]['color'] = '#995555'
 map_agents[2][1]['spawn_point'] = (550, 600)
+map_agents[2][1]['starting_angle'] = -1.57
 
 map_agents[3][1]['color'] = '#999922'
-map_agents[3][1]['spawn_point'] = (550, 200)
+map_agents[3][1]['spawn_point'] = (550, 250)
 
 
 
