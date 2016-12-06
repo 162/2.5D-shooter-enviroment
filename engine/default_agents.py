@@ -1,14 +1,71 @@
 from base_agent import BaseAgent
 import pygame
-from keras.layers import Input, Dense, Flatten
+from keras.layers import Input, Dense, Flatten, Convolution1D
 from keras.models import Model
 from keras.optimizers import RMSprop
 import numpy as np
-from random import random
+from random import random, sample
 
 actions_list = ['to_go_forward', 'to_go_back', 'to_go_left', 'to_go_right',
                 'to_turn_left', 'to_turn_right', 'to_shoot', 'to_take_pistol',
                 'to_take_shotgun', 'to_take_rocket_launcher', 'to_take_machine_gun']
+
+
+def sample_from_memory(mem1, mem2, batch_size):
+    if len(mem1) != len(mem2):
+        raise ValueError('Memories must have same length to sample!')
+    elif len(mem2) < batch_size:
+        raise ValueError('Memories must be larger than batches!')
+    indexes = range(len(mem1))
+    while 1:
+        to_take = sample(indexes, batch_size)
+        print to_take
+        yield ([mem1[i] for i in to_take], [mem2[i] for i in to_take])
+
+
+def get_random_actions(prev):
+    actions = {}
+    crit = 0.1
+
+    fw_bw = int(prev['to_go_forward']) - int(prev['to_go_back']) + random()-0.5
+    if fw_bw > crit:
+        actions['to_go_forward'] = True
+        actions['to_go_back'] = False
+    elif fw_bw < -crit:
+        actions['to_go_forward'] = False
+        actions['to_go_back'] = True
+    else:
+        actions['to_go_forward'] = False
+        actions['to_go_back'] = False
+
+    r_l = int(prev['to_go_right']) - int(prev['to_go_left']) + random()-0.5
+    if r_l > crit:
+        actions['to_go_right'] = True
+        actions['to_go_left'] = False
+    elif r_l < -crit:
+        actions['to_go_right'] = False
+        actions['to_go_left'] = True
+    else:
+        actions['to_go_right'] = False
+        actions['to_go_left'] = False
+
+    r_l = int(prev['to_turn_right']) - int(prev['to_turn_left']) + random()-0.5
+    if r_l > crit:
+        actions['to_turn_right'] = True
+        actions['to_turn_left'] = False
+    elif r_l < -crit:
+        actions['to_turn_right'] = False
+        actions['to_turn_left'] = True
+    else:
+        actions['to_turn_right'] = False
+        actions['to_turn_left'] = False
+
+    actions['to_shoot'] = random() > 0.9
+    actions['to_take_pistol'] = True
+    actions['to_take_shotgun'] = False
+    actions['to_take_rocket_launcher'] = False
+    actions['to_take_machine_gun'] = False
+    return actions
 
 
 class KeyboardAgent(BaseAgent):
@@ -178,6 +235,114 @@ class PerceptronAgent(BaseAgent):
             pass
 
 
+class DQNAgent(BaseAgent):
+    def __init__(self,
+                 max_velocity,
+                 turn_speed,
+                 max_health,
+                 max_armor,
+                 spawn_point=(200, 200),
+                 starting_angle=0,
+                 starter_weapon_pack=None,
+                 starter_ammo_pack=None,
+                 color='#303030',
+                 radius=10):
+        BaseAgent.__init__(self,
+                           max_velocity,
+                           turn_speed,
+                           max_health,
+                           max_armor,
+                           spawn_point,
+                           starting_angle,
+                           starter_weapon_pack,
+                           starter_ammo_pack,
+                           color,
+                           radius)
+        input_layer = Input(shape=(8, 17))
+        inner_layer1 = Convolution1D(20, 3, activation='relu')(input_layer)
+        inner_layer2 = Convolution1D(20, 3, activation='relu')(inner_layer1)
+        flattened = Flatten()(inner_layer2)
+        inner_layer3 = Dense(20, activation='relu')(flattened)
+        output_layer = Dense(11, activation='tanh')(inner_layer3)
+        self.model = Model(input_layer, output_layer)
+        self.model.compile(RMSprop(),
+                           loss='hinge')
+
+        self.delta = 1-1e-6 #decrease coefficient of epsilon-greedy
+        self.epsilon = 1 #probability of random action
+
+        self.max_memory_size = 5000
+        self.observation_memory = []
+        self.action_memory = []
+
+        self.max_buffer_size = 100
+        self.observation_buffer = []
+        self.action_buffer = []
+        self.reward_buffer = []
+
+        self.tau = 0.9
+
+        self.batch_size = 32
+
+    def bufferize(self, observation, reward, actions):
+        self.observation_buffer.append(observation)
+        self.reward_buffer.append(reward)
+        self.reward_buffer.append(actions)
+        if len(self.observation_buffer) > self.max_buffer_size and \
+           len(self.action_buffer) > self.max_buffer_size and \
+           len(self.reward_buffer) > self.max_buffer_size:
+            self.observation_buffer = self.observation_buffer[1:]
+            self.action_buffer = self.action_buffer[1:]
+            self.reward_buffer = self.reward_buffer[1:]
+
+    def update_memory(self):
+        if len(self.observation_buffer) == len(self.reward_buffer) == self.max_buffer_size:
+            self.observation_memory.append(self.observation_buffer[0])
+            new_actions = self.action_buffer[0].copy()
+            for j in range(self.action_buffer[0].shape[1]):
+                new_actions[j] = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[j] for i in range(self.max_buffer_size)])
+            self.action_memory.append(new_actions)
+            if len(self.action_memory) > self.max_memory_size and \
+               len(self.observation_memory) > self.observation_memory:
+                self.observation_memory = self.observation_memory[1:]
+                self.action_memory = self.action_memory[1:]
+
+        else:
+            pass
+
+    def think(self, observation):
+        global actions_list
+        observation = np.array(observation)
+        try:
+            r = random()
+            if r < self.epsilon:
+                #actions = [random()**2 > 0.95 for i in range(11)]
+                self.actions = get_random_actions(self.actions)
+            else:
+                observation = observation.reshape((1, 8, 17))
+                pred = self.model.predict(observation)
+                actions = [i > 0 for i in pred[0]]
+                self.actions = {actions_list[i]: actions[i] for i in range(11)}
+            self.epsilon *= self.delta
+        except:
+            pass
+
+    def observe(self, observation, reward):
+        global actions_list
+        observation = np.array(observation)
+        try:
+            observation = observation.reshape((1, 8, 17))
+            actions = np.array([int(self.actions[i])*reward for i in actions_list])
+            actions = actions.reshape((1, 11))
+
+            self.bufferize(observation, reward, actions)
+            self.update_memory()
+            if self.batch_size <= len(self.action_memory) and \
+               self.batch_size <= len(self.observation_memory):
+                self.model.fit_generator(sample_from_memory(self.observation_memory, self.action_memory, self.batch_size),
+                                         samples_per_epoch=32, nb_epoch=1, verbose=0)
+        except:
+            print 'something went wrong'
 
 
 

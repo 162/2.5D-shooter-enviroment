@@ -45,10 +45,10 @@ class World:
 
         self.angle_shift = 0.125
         self.rays = 17
-        self.critical_distance = 5
+        self.critical_distance = 10
         self.layers = 8
-        self.vision_range = 100
-        self.distance_shift = 10
+        self.vision_range = 200
+        self.distance_shift = 20
 
     def load(self):
         map_size, map_agents, map_walls, map_columns, map_bonuses = None, None, None, None, None
@@ -175,6 +175,8 @@ class World:
         :param agent_index:
         :return:
         """
+        if self.agents[agent_index].name.startswith('Target'):
+            return np.zeros(shape=(self.layers, self.rays))
         x0 = self.agents[agent_index].x
         y0 = self.agents[agent_index].y
         a0 = self.agents[agent_index].angle
@@ -275,6 +277,10 @@ class World:
                     rewards[agent.name] = -1
                     agent.killed_by = 0
             else:
+                try:
+                    print agent.epsilon, agent.name
+                except:
+                    pass
                 agent.reset()
             i += 1
 
@@ -309,5 +315,6 @@ class World:
         if time_taken < frame_time:
             sleep(frame_time-time_taken)
         else:
-            print 'too slow!', time_taken, 'instead of', frame_time
+            pass
+            #print 'too slow!', time_taken, 'instead of', frame_time
 
