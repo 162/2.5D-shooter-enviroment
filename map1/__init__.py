@@ -32,7 +32,7 @@ default_parameters = {'max_velocity': 1.2,
                       'radius': 12}
 
 # Agents generating (without decision functions)
-map_agents = [('KeyboardAgent', default_parameters.copy()),
+map_agents = [('EmptyAgent', default_parameters.copy()),
               ('EmptyAgent', default_parameters.copy()),
               ('PerceptronAgent', default_parameters.copy()),
               ('DQNAgent', default_parameters.copy()),

@@ -1,7 +1,6 @@
 #TODO
 
 
-1. Add round ends
-2. Add stats to vision
-3. Add logger and replay visualizer
-4. Add manual
+1. Add stats to vision
+2. Add logger and replay visualizer
+3. Add manual

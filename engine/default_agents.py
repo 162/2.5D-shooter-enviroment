@@ -1,10 +1,10 @@
 from base_agent import BaseAgent
 import pygame
-from keras.layers import Input, Dense, Flatten, Convolution1D
+from keras.layers import Input, Dense, Flatten, Convolution1D, MaxPooling1D, BatchNormalization
 from keras.models import Model
 from keras.optimizers import RMSprop
 import numpy as np
-from random import random, sample
+from random import random, sample, randint
 
 actions_list = ['to_go_forward', 'to_go_back', 'to_go_left', 'to_go_right',
                 'to_turn_left', 'to_turn_right', 'to_shoot', 'to_take_pistol',
@@ -18,8 +18,8 @@ def sample_from_memory(mem1, mem2, batch_size):
         raise ValueError('Memories must be larger than batches!')
     indexes = range(len(mem1))
     while 1:
-        to_take = sample(indexes, batch_size)
-        print to_take
+        #to_take = sample(indexes, batch_size)
+        to_take = [randint(0, len(mem1)-1)]
         yield ([mem1[i] for i in to_take], [mem2[i] for i in to_take])
 
 
@@ -197,7 +197,7 @@ class PerceptronAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        input_layer = Input(shape=(8, 17))
+        input_layer = Input(shape=(17, 8))
         flattened_input = Flatten()(input_layer)
         inner_layer = Dense(20, activation='relu')(flattened_input)
         output_layer = Dense(11, activation='tanh')(inner_layer)
@@ -215,7 +215,7 @@ class PerceptronAgent(BaseAgent):
             if r < self.epsilon:
                 actions = [random()**2 > 0.95 for i in range(11)]
             else:
-                observation = observation.reshape((1, 8, 17))
+                observation = observation.reshape((1, 17, 8))
                 pred = self.model.predict(observation)
                 actions = [i > 0 for i in pred[0]]
             self.actions = {actions_list[i]: actions[i] for i in range(11)}
@@ -258,17 +258,20 @@ class DQNAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        input_layer = Input(shape=(8, 17))
+        input_layer = Input(shape=(17, 8))
         inner_layer1 = Convolution1D(20, 3, activation='relu')(input_layer)
-        inner_layer2 = Convolution1D(20, 3, activation='relu')(inner_layer1)
-        flattened = Flatten()(inner_layer2)
+        pooling1 = MaxPooling1D(2)(inner_layer1)
+        inner_layer2 = Convolution1D(20, 3, activation='relu')(pooling1)
+        pooling2 = MaxPooling1D(2)(inner_layer2)
+        flattened = Flatten()(pooling2)
         inner_layer3 = Dense(20, activation='relu')(flattened)
-        output_layer = Dense(11, activation='tanh')(inner_layer3)
+        bn = BatchNormalization()(inner_layer3)
+        output_layer = Dense(11, activation='tanh')(bn)
         self.model = Model(input_layer, output_layer)
         self.model.compile(RMSprop(),
                            loss='hinge')
 
-        self.delta = 1-1e-5 #decrease coefficient of epsilon-greedy
+        self.delta = 1-2e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
 
         self.max_memory_size = 5000
@@ -280,14 +283,17 @@ class DQNAgent(BaseAgent):
         self.action_buffer = []
         self.reward_buffer = []
 
-        self.tau = 0.9
+        self.tau = 0.97
 
-        self.batch_size = 32
+        self.batch_size = 16
+
+        self.skip = 5
+        self.t = 0
 
     def bufferize(self, observation, reward, actions):
         self.observation_buffer.append(observation)
         self.reward_buffer.append(reward)
-        self.reward_buffer.append(actions)
+        self.action_buffer.append(actions)
         if len(self.observation_buffer) > self.max_buffer_size and \
            len(self.action_buffer) > self.max_buffer_size and \
            len(self.reward_buffer) > self.max_buffer_size:
@@ -299,7 +305,7 @@ class DQNAgent(BaseAgent):
         if len(self.observation_buffer) == len(self.reward_buffer) == self.max_buffer_size:
             self.observation_memory.append(self.observation_buffer[0])
             new_actions = self.action_buffer[0].copy()
-            for j in range(self.action_buffer[0].shape[1]):
+            for j in range(self.action_buffer[0].shape[0]):
                 new_actions[j] = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[j] for i in range(self.max_buffer_size)])
             self.action_memory.append(new_actions)
             if len(self.action_memory) > self.max_memory_size and \
@@ -315,15 +321,16 @@ class DQNAgent(BaseAgent):
         observation = np.array(observation)
         try:
             r = random()
-            if r < self.epsilon:
-                #actions = [random()**2 > 0.95 for i in range(11)]
-                self.actions = get_random_actions(self.actions)
-            else:
-                observation = observation.reshape((1, 8, 17))
-                pred = self.model.predict(observation)
-                actions = [i > 0 for i in pred[0]]
-                self.actions = {actions_list[i]: actions[i] for i in range(11)}
-            self.epsilon *= self.delta
+            if self.t == 0:
+                if r < self.epsilon:
+                    #actions = [random()**2 > 0.95 for i in range(11)]
+                    self.actions = get_random_actions(self.actions)
+                else:
+                    observation = observation.reshape((1, 17, 8))
+                    pred = self.model.predict(observation)
+                    actions = [i > 0 for i in pred[0]]
+                    self.actions = {actions_list[i]: actions[i] for i in range(11)}
+                self.epsilon *= self.delta
         except:
             pass
 
@@ -331,16 +338,18 @@ class DQNAgent(BaseAgent):
         global actions_list
         observation = np.array(observation)
         try:
-            observation = observation.reshape((1, 8, 17))
+            self.t = (self.t + 1) % self.skip
+            observation = observation.reshape((1, 17, 8))
             actions = np.array([int(self.actions[i])*reward for i in actions_list])
             actions = actions.reshape((1, 11))
 
             self.bufferize(observation, reward, actions)
             self.update_memory()
-            if self.batch_size <= len(self.action_memory) and \
-               self.batch_size <= len(self.observation_memory):
+            if self.batch_size < len(self.action_memory) and \
+               self.batch_size < len(self.observation_memory) and \
+               self.t==0:
                 self.model.fit_generator(sample_from_memory(self.observation_memory, self.action_memory, self.batch_size),
-                                         samples_per_epoch=32, nb_epoch=1, verbose=0)
+                                         samples_per_epoch=self.batch_size, nb_epoch=1, verbose=0)
         except:
             print 'something went wrong'
 

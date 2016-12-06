@@ -16,6 +16,9 @@ journal = []
 
 stats_names = ['Pos', 'Name', 'K', 'D', 'K-D', 'K/D', 'HP', 'A', 'B', 'S', 'R']
 
+MAX_SCORE = 50
+ROUND_START = time()
+
 
 def render_line(screen, lst, x0, y0, clr=pygame.Color('#ffffff')):
     deltas = [0, 32, 80, 24, 24, 32, 40, 32, 32, 32, 32]
@@ -25,6 +28,12 @@ def render_line(screen, lst, x0, y0, clr=pygame.Color('#ffffff')):
     for i in range(len(lst)):
         header = font.render(str(lst[i]), True, text_color, bg_color)
         screen.blit(header, (x0+sum(deltas[:i+1]), y0))
+
+
+def save_result(stats, path):
+    with open(path, 'w') as f:
+        lines = ['\t'.join([str(i) for i in line]) for line in stats]
+        f.write('\n'.join(lines))
 
 
 class World:
@@ -47,8 +56,9 @@ class World:
         self.rays = 17
         self.critical_distance = 10
         self.layers = 8
-        self.vision_range = 200
+        self.vision_range = 300
         self.distance_shift = 20
+        self.round = 1
 
     def load(self):
         map_size, map_agents, map_walls, map_columns, map_bonuses = None, None, None, None, None
@@ -88,6 +98,10 @@ class World:
         else:
             print 'Loading failed'
             # raise MapLoadingError
+
+    def reset(self):
+        for i in self.agents:
+            i.reload()
 
     def fill_holder(self):
         self.stats = []
@@ -237,7 +251,7 @@ class World:
                         observation[i][a] = float(self.vision_range-d*self.distance_shift)/self.vision_range
                 if collisions[0]:
                     break
-        return observation
+        return observation.transpose()
 
     def tick(self):
         start = time()
@@ -313,8 +327,15 @@ class World:
         frame_time = 1.0/FPS
         time_taken = time()-start
         if time_taken < frame_time:
-            sleep(frame_time-time_taken)
+            pass
+            #sleep(frame_time-time_taken)
         else:
             pass
             #print 'too slow!', time_taken, 'instead of', frame_time
-
+        if max(i.kills for i in self.agents) >= MAX_SCORE or time()-ROUND_START>300:
+            save_result(self.stats, 'logs/'+str(self.round)+'.log')
+            self.reset()
+            self.round += 1
+            print 'ROUND', self.round
+        #if self.round>1:
+        #    1/0

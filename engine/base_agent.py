@@ -101,6 +101,12 @@ class BaseAgent:
         self.killed_by = -1
         self.to_resurrect = -1
 
+    def reload(self):
+        self.reset()
+        self.kills = 0
+        self.deaths = 0
+
+
     def distance_to_point(self, x, y):
         return ((self.x-x)**2 + (self.y-y)**2)**0.5 - self.radius
 
