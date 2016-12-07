@@ -20,7 +20,7 @@ screen = pygame.display.set_mode(DISPLAY, flags)
 # This has to be done somewhere inside world loading
 # It`s applying keyboard mode to the only agent
 
-w.agents[0].name = 'Target0'
+w.agents[0].name = 'BP'
 w.agents[1].name = 'Target1'
 w.agents[2].angle = -1.57
 w.agents[2].name = 'Perceptron'
