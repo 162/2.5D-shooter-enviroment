@@ -1,13 +1,12 @@
 from walls import Column, Wall
 from base_agent import BaseAgent, agent_keys
 from default_agents import *
-from time import sleep
+from time import sleep, time
 from bonuses import *
 # from exceptions import MapLoadingError
 import pygame
 from math import pi, sin, cos
 from random import random, randint
-from time import time
 from constants import *
 import numpy as np
 
@@ -101,7 +100,11 @@ class World:
 
     def reset(self):
         for i in self.agents:
+            x, y, angle = randint(300, 780), randint(200, 520), random()*6.29
+            i.spawn_angle = angle
+            i.spawn_point = (x, y)
             i.reload()
+
 
     def fill_holder(self):
         self.stats = []
@@ -254,6 +257,7 @@ class World:
         return observation.transpose()
 
     def tick(self):
+        global ROUND_START
         start = time()
         self.time += 1
 
@@ -337,5 +341,6 @@ class World:
             self.reset()
             self.round += 1
             print 'ROUND', self.round
+            ROUND_START = time()
         #if self.round>1:
         #    1/0
