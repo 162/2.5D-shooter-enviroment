@@ -21,7 +21,7 @@ ROUND_START = time()
 def get_status_vector(value, max_value, size):
     output = np.zeros(shape=[size], dtype='float16')
     full = int(float(value)/max_value*size)
-    for i in range(full):
+    for i in range(min(full, size)):
         output[i] = 1
     if full < size:
         output[full] = float(value)/max_value*size - int(float(value)/max_value*size)
