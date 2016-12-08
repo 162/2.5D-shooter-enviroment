@@ -1,6 +1,6 @@
 from base_agent import BaseAgent
 import pygame
-from keras.layers import Input, Dense, Flatten, Convolution1D, MaxPooling1D, BatchNormalization
+from keras.layers import Input, Dense, Flatten, Convolution1D, MaxPooling1D, BatchNormalization, AveragePooling1D
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
 import numpy as np
@@ -347,18 +347,18 @@ class DQNAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        input_layer = Input(shape=(17, 11))
-        inner_layer1 = Convolution1D(20, 5, activation='relu')(input_layer)
-        pooling1 = MaxPooling1D(2)(inner_layer1)
-        inner_layer2 = Convolution1D(20, 3, activation='relu')(pooling1)
-        pooling2 = MaxPooling1D(2)(inner_layer2)
-        flattened = Flatten()(pooling2)
-        inner_layer3 = Dense(20, activation='relu')(flattened)
-        bn = BatchNormalization()(inner_layer3)
-        output_layer = Dense(11, activation='tanh')(bn)
-        self.model = Model(input_layer, output_layer)
-        self.model.compile(RMSprop(),
-                           loss='hinge')
+        #input_layer = Input(shape=(17, 11))
+        #inner_layer1 = Convolution1D(20, 5, activation='relu')(input_layer)
+        #pooling1 = MaxPooling1D(2)(inner_layer1)
+        #inner_layer2 = Convolution1D(20, 3, activation='relu')(pooling1)
+        #pooling2 = MaxPooling1D(2)(inner_layer2)
+        #flattened = Flatten()(pooling2)
+        #inner_layer3 = Dense(20, activation='relu')(flattened)
+        #bn = BatchNormalization()(inner_layer3)
+        #output_layer = Dense(11, activation='tanh')(bn)
+        #self.model = Model(input_layer, output_layer)
+        #self.model.compile(RMSprop(),
+        #                   loss='hinge')
 
         self.delta = 1-2e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
@@ -380,6 +380,35 @@ class DQNAgent(BaseAgent):
         self.t = 0
 
         self.age = 0
+
+    def set_model(self, config):
+        layer_descriptions = config.split('\n')
+        layers = [Input(shape=(17, 11))]
+        prev_ind = 0
+        for line in layer_descriptions:
+            parameters = line.split('-')
+            for i in range(len(parameters)):
+                if parameters[i].isdigit():
+                    parameters[i] = int(parameters[i])
+            if parameters[0] == 'dense':
+                layers.append(Dense(parameters[1], activation=parameters[2])(layers[prev_ind]))
+            elif parameters[0] == 'conv':
+                layers.append(Convolution1D(parameters[1], parameters[2], activation=parameters[3])(layers[prev_ind]))
+            elif parameters[0] == 'flatten':
+                layers.append(Flatten()(layers[prev_ind]))
+            elif parameters[0] == 'bn':
+                layers.append(BatchNormalization()(layers[prev_ind]))
+            elif parameters[0] == 'mp':
+                layers.append(MaxPooling1D(parameters[1])(layers[prev_ind]))
+            elif parameters[0] == 'avp':
+                layers.append(AveragePooling1D(parameters[1])(layers[prev_ind]))
+            else:
+                raise ValueError(parameters)
+            prev_ind += 1
+        layers.append(Dense(11, activation='tanh')(layers[-1]))
+        self.model = Model(layers[0], layers[-1])
+        self.model.compile(RMSprop(),
+                           loss='hinge')
 
     def load(self, filename):
         self.model = load_model(filename)

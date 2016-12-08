@@ -91,6 +91,8 @@ class BaseAgent:
         self.kills = 0
         self.deaths = 0
 
+        self.reward = 0
+
     def reset(self):
         self.angle = self.spawn_angle
         self.hp = self.max_hp
@@ -116,6 +118,7 @@ class BaseAgent:
         it`s armor value and rest lowers his health. If agent dies, this method writes
         about his death to journal.
         """
+        self.reward -= 1
         to_armor = min(self.arm, amount/2)
         to_hp = amount - to_armor
         self.arm -= to_armor
@@ -223,6 +226,7 @@ class BaseAgent:
                    new_hp=0,
                    new_armor=0,
                    new_ammo=[0, 0, 0]):
+        self.reward += 0.1
         self.hp = min(new_hp+self.hp, self.max_hp)
         self.arm = min(new_armor+self.arm, self.max_arm)
         for i in range(3):

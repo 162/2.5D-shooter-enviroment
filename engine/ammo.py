@@ -44,6 +44,7 @@ class Ammo:
             for i in agents:
                 if i.is_alive and dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
                     i.take_damage(self.damage, self.owner_id)
+                    agents[self.owner_id-1].reward += 1
             self.exploded = True
 
     def update(self, obstacles, agents):

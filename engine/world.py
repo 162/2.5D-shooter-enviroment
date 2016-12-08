@@ -299,20 +299,18 @@ class World:
         killers = []
         i = 0
         observations = {i.name:0 for i in self.agents}
-        rewards = {i.name:0 for i in self.agents}
+        for agent in self.agents:
+            agent.reward = 0
         for agent in self.agents:
             if agent.is_alive:
                 observations[agent.name] = self.get_observation(i)
                 agent.think(observations[agent.name])
                 new_bullets = agent.update(self.obstacles)
-                if rewards[agent.name] == 0:
-                    rewards[agent.name] = 0.1
                 self.bullets += new_bullets
             elif agent.to_resurrect:
                 agent.to_resurrect -= 1
                 if agent.killed_by:
                     killers.append(agent.killed_by)
-                    rewards[agent.name] = -1
                     agent.killed_by = 0
             else:
                 try:
@@ -324,11 +322,10 @@ class World:
 
         for i in killers:
             self.agents[i-1].kills += 1
-            rewards[self.agents[i-1].name] = 0.1
 
         for agent in self.agents:
             if agent.is_alive:
-                agent.observe(observations[agent.name], rewards[agent.name])
+                agent.observe(observations[agent.name], min(1, max(-1, agent.reward)))
 
         bullets_to_drop = []
         for i in range(len(self.bullets)):

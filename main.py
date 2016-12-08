@@ -29,6 +29,10 @@ w.agents[4].name = 'Target1'
 w.agents[5].name = 'Target2'
 w.agents[6].name = 'Target3'
 
+with open('configs/DQN_default.config', 'r') as f:
+    w.agents[3].set_model(f.read())
+
+
 while 1:
     #try:
     if 1:
