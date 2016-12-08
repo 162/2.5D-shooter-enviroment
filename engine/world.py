@@ -356,7 +356,7 @@ class World:
         else:
             pass
             # print 'too slow!', time_taken, 'instead of', frame_time
-        if max(i.kills for i in self.agents) >= MAX_SCORE or time()-ROUND_START > 60:
+        if max(i.kills for i in self.agents) >= MAX_SCORE or time()-ROUND_START > 120:
             save_result(self.stats, 'logs/'+str(self.round)+'.log')
             self.reset()
             self.round += 1

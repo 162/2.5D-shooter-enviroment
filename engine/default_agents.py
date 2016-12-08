@@ -27,7 +27,7 @@ def get_random_actions(prev):
     actions = {}
     crit = 0.25
 
-    fw_bw = int(prev['to_go_forward']) - int(prev['to_go_back']) + 2*random()-1
+    fw_bw = int(prev['to_go_forward']) - int(prev['to_go_back']) + 2*random()-0.9
     if fw_bw > crit:
         actions['to_go_forward'] = True
         actions['to_go_back'] = False
@@ -61,10 +61,9 @@ def get_random_actions(prev):
         actions['to_turn_left'] = False
 
     actions['to_shoot'] = random() > 0.9
-    actions['to_take_pistol'] = True
-    actions['to_take_shotgun'] = False
-    actions['to_take_rocket_launcher'] = False
-    actions['to_take_machine_gun'] = False
+    weapons = [False]*4
+    weapons[randint(0, 3)] = True
+    actions['to_take_pistol'], actions['to_take_shotgun'], actions['to_take_rocket_launcher'], actions['to_take_machine_gun'] = weapons
     return actions
 
 
@@ -172,6 +171,33 @@ class EmptyAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
+
+class RandomAgent(BaseAgent):
+    def __init__(self,
+                 max_velocity,
+                 turn_speed,
+                 max_health,
+                 max_armor,
+                 spawn_point=(200, 200),
+                 starting_angle=0,
+                 starter_weapon_pack=None,
+                 starter_ammo_pack=None,
+                 color='#303030',
+                 radius=10):
+        BaseAgent.__init__(self,
+                           max_velocity,
+                           turn_speed,
+                           max_health,
+                           max_armor,
+                           spawn_point,
+                           starting_angle,
+                           starter_weapon_pack,
+                           starter_ammo_pack,
+                           color,
+                           radius)
+
+    def think(self, observation):
+        self.actions = get_random_actions(self.actions)
 
 
 class PerceptronAgent(BaseAgent):
@@ -320,7 +346,7 @@ class DQNAgent(BaseAgent):
                            color,
                            radius)
         input_layer = Input(shape=(17, 11))
-        inner_layer1 = Convolution1D(20, 3, activation='relu')(input_layer)
+        inner_layer1 = Convolution1D(20, 5, activation='relu')(input_layer)
         pooling1 = MaxPooling1D(2)(inner_layer1)
         inner_layer2 = Convolution1D(20, 3, activation='relu')(pooling1)
         pooling2 = MaxPooling1D(2)(inner_layer2)
@@ -351,6 +377,20 @@ class DQNAgent(BaseAgent):
         self.skip = 5
         self.t = 0
 
+        self.age = 0
+
+    def reset(self):
+        self.angle = self.spawn_angle
+        self.hp = self.max_hp
+        self.arm = 0
+        self.x, self.y = self.spawn_point
+        self.ammo = [10, 5, 1]
+        self.is_alive = True
+        self.killed_by = -1
+        self.to_resurrect = -1
+        self.model.save('saved/DQNAgent'+str(self.age)+'.h5')
+        self.age += 1
+
     def bufferize(self, observation, reward, actions):
         self.observation_buffer.append(observation)
         self.reward_buffer.append(reward)
@@ -363,11 +403,12 @@ class DQNAgent(BaseAgent):
             self.reward_buffer = self.reward_buffer[1:]
 
     def update_memory(self):
+        max_reward = sum([self.tau**i for i in range(self.max_buffer_size)])
         if len(self.observation_buffer) == len(self.reward_buffer) == self.max_buffer_size:
             self.observation_memory.append(self.observation_buffer[0])
             new_actions = self.action_buffer[0].copy()
             for j in range(self.action_buffer[0].shape[0]):
-                new_actions[j] = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[j] for i in range(self.max_buffer_size)])
+                new_actions[j] = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[j] for i in range(self.max_buffer_size)])/max_reward
             self.action_memory.append(new_actions)
             if len(self.action_memory) > self.max_memory_size and \
                len(self.observation_memory) > self.observation_memory:

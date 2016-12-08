@@ -5,10 +5,10 @@ clr = '#888888'
 
 # walls and columns positions
 map_walls = []
-map_walls.append(((540, 10), 1080, 20, clr))
-map_walls.append(((540, 710), 1080, 20, clr))
-map_walls.append(((1070, 360), 20, 720, clr))
-map_walls.append(((10, 360), 20, 720, clr))
+map_walls.append(((540, 110), 1080, 20, clr))
+map_walls.append(((540, 610), 1080, 20, clr))
+map_walls.append(((970, 360), 20, 720, clr))
+map_walls.append(((110, 360), 20, 720, clr))
 
 map_columns = [((150, 150), 30, clr),
                ((930, 150), 30, clr),
@@ -33,7 +33,7 @@ default_parameters = {'max_velocity': 1.2,
 
 # Agents generating (without decision functions)
 map_agents = [('BetterPerceptronAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy()),
+              ('RandomAgent', default_parameters.copy()),
               ('PerceptronAgent', default_parameters.copy()),
               ('DQNAgent', default_parameters.copy()),
               ('EmptyAgent', default_parameters.copy()),
@@ -41,7 +41,7 @@ map_agents = [('BetterPerceptronAgent', default_parameters.copy()),
               ('EmptyAgent', default_parameters.copy())]
 
 
-map_agents[1][1]['color'] = '#559955'
+map_agents[1][1]['color'] = '#559999'
 map_agents[1][1]['spawn_point'] = (750, 250)
 
 map_agents[4][1]['color'] = '#559955'
@@ -54,7 +54,7 @@ map_agents[6][1]['color'] = '#559955'
 map_agents[6][1]['spawn_point'] = (550, 400)
 
 map_agents[2][1]['color'] = '#995555'
-map_agents[2][1]['spawn_point'] = (550, 600)
+map_agents[2][1]['spawn_point'] = (550, 550)
 map_agents[2][1]['starting_angle'] = -1.57
 
 map_agents[3][1]['color'] = '#999922'
@@ -63,8 +63,8 @@ map_agents[3][1]['spawn_point'] = (550, 250)
 
 
 # Bonuses spawn points with timeouts
-map_bonuses = [[(180, 180, 250), (900, 180, 250), (180, 540, 250), (900, 540, 250), (550, 250, 250), (550, 550, 250)],  # bullet packs
-               [],  # shells packs
-               [],  # rockets packs
-               [],  # medkits
-               []]  # armor vests
+map_bonuses = [[(300, 200, 250), (300, 335, 250), (300, 470, 250), (540, 200, 250), (540, 470, 250), (780, 200, 250), (780, 335, 250), (780, 470, 250)],  # bullet packs
+               [(350, 250, 250), (350, 470, 250), (730, 250, 250), (730, 470, 250)],  # shells packs
+               [(350, 335, 250), (730, 335, 250)],  # rockets packs
+               [(540, 250, 250)],  # medkits
+               [(540, 470, 250)]]  # armor vests
