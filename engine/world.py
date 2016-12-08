@@ -15,7 +15,7 @@ journal = []
 stats_names = ['Pos', 'Name', 'K', 'D', 'K-D', 'K/D', 'HP', 'A', 'B', 'S', 'R']
 
 MAX_SCORE = 50
-ROUND_START = time()
+EPISODE_DURATION = 1500
 
 
 def get_status_vector(value, max_value, size):
@@ -68,6 +68,7 @@ class World:
         self.distance_shift = 20
 
         self.round = 1
+        self.ticks = 0
 
     def load(self):
         map_size, map_agents, map_walls, map_columns, map_bonuses = None, None, None, None, None
@@ -277,7 +278,7 @@ class World:
         return observation.transpose()
 
     def tick(self):
-        global ROUND_START
+        self.ticks += 1
         start = time()
         self.time += 1
 
@@ -353,11 +354,11 @@ class World:
         else:
             pass
             # print 'too slow!', time_taken, 'instead of', frame_time
-        if max(i.kills for i in self.agents) >= MAX_SCORE or time()-ROUND_START > 120:
+        if max(i.kills for i in self.agents) >= MAX_SCORE or self.ticks > EPISODE_DURATION:
             save_result(self.stats, 'logs/'+str(self.round)+'.log')
             self.reset()
             self.round += 1
             print 'ROUND', self.round
-            ROUND_START = time()
+            self.ticks = 0
         # if self.round>1:
         #    1/0

@@ -28,7 +28,7 @@ default_parameters = {'max_velocity': 1.2,
                       'starting_angle': 0,
                       'starter_weapon_pack': None,
                       'starter_ammo_pack': None,
-                      'color': '#555599',
+                      'color': '#4444dd',
                       'radius': 12}
 
 # Agents generating (without decision functions)
@@ -38,28 +38,39 @@ map_agents = [('BetterPerceptronAgent', default_parameters.copy()),
               ('DQNAgent', default_parameters.copy()),
               ('EmptyAgent', default_parameters.copy()),
               ('EmptyAgent', default_parameters.copy()),
-              ('PerceptronAgent', default_parameters.copy())]
+              ('PerceptronAgent', default_parameters.copy()),
+              ('DQNAgent', default_parameters.copy()),
+              ('DQNAgent', default_parameters.copy()),
+              ('DQNAgent', default_parameters.copy())]
 
 
-map_agents[1][1]['color'] = '#559999'
+map_agents[1][1]['color'] = '#229999'
 map_agents[1][1]['spawn_point'] = (750, 250)
 
-map_agents[4][1]['color'] = '#559955'
+map_agents[4][1]['color'] = '#555555'
 map_agents[4][1]['spawn_point'] = (350, 450)
 
-map_agents[5][1]['color'] = '#559955'
+map_agents[5][1]['color'] = '#555555'
 map_agents[5][1]['spawn_point'] = (750, 450)
 
-map_agents[2][1]['color'] = '#559955'
+map_agents[2][1]['color'] = '#555555'
 map_agents[2][1]['spawn_point'] = (550, 400)
 
-map_agents[6][1]['color'] = '#995555'
+map_agents[6][1]['color'] = '#992222'
 map_agents[6][1]['spawn_point'] = (550, 550)
 map_agents[6][1]['starting_angle'] = -1.57
 
 map_agents[3][1]['color'] = '#999922'
 map_agents[3][1]['spawn_point'] = (550, 250)
 
+map_agents[7][1]['color'] = '#bb6600'
+map_agents[7][1]['spawn_point'] = (450, 250)
+
+map_agents[8][1]['color'] = '#992299'
+map_agents[8][1]['spawn_point'] = (550, 350)
+
+map_agents[9][1]['color'] = '#229922'
+map_agents[9][1]['spawn_point'] = (450, 350)
 
 
 # Bonuses spawn points with timeouts

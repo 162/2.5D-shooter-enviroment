@@ -367,12 +367,12 @@ class DQNAgent(BaseAgent):
         self.observation_memory = []
         self.action_memory = []
 
-        self.max_buffer_size = 250
+        self.max_buffer_size = 150
         self.observation_buffer = []
         self.action_buffer = []
         self.reward_buffer = []
 
-        self.tau = 0.99
+        self.tau = 0.98
 
         self.batch_size = 16
 
@@ -422,7 +422,7 @@ class DQNAgent(BaseAgent):
         self.is_alive = True
         self.killed_by = -1
         self.to_resurrect = -1
-        self.model.save('saved/DQNAgent'+str(self.age)+'.h5')
+        self.model.save('saved/'+self.name+str(self.age)+'.h5')
         self.age += 1
         self.observation_buffer = []
         self.action_buffer = []
