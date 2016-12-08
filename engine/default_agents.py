@@ -1,10 +1,11 @@
 from base_agent import BaseAgent
 import pygame
 from keras.layers import Input, Dense, Flatten, Convolution1D, MaxPooling1D, BatchNormalization
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.optimizers import RMSprop
 import numpy as np
 from random import random, sample, randint
+from math import tanh
 
 actions_list = ['to_go_forward', 'to_go_back', 'to_go_left', 'to_go_right',
                 'to_turn_left', 'to_turn_right', 'to_shoot', 'to_take_pistol',
@@ -171,6 +172,7 @@ class EmptyAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
+
 
 class RandomAgent(BaseAgent):
     def __init__(self,
@@ -365,12 +367,12 @@ class DQNAgent(BaseAgent):
         self.observation_memory = []
         self.action_memory = []
 
-        self.max_buffer_size = 100
+        self.max_buffer_size = 250
         self.observation_buffer = []
         self.action_buffer = []
         self.reward_buffer = []
 
-        self.tau = 0.98
+        self.tau = 0.99
 
         self.batch_size = 16
 
@@ -378,6 +380,9 @@ class DQNAgent(BaseAgent):
         self.t = 0
 
         self.age = 0
+
+    def load(self, filename):
+        self.model = load_model(filename)
 
     def reset(self):
         self.angle = self.spawn_angle
@@ -390,6 +395,9 @@ class DQNAgent(BaseAgent):
         self.to_resurrect = -1
         self.model.save('saved/DQNAgent'+str(self.age)+'.h5')
         self.age += 1
+        self.observation_buffer = []
+        self.action_buffer = []
+        self.reward_buffer = []
 
     def bufferize(self, observation, reward, actions):
         self.observation_buffer.append(observation)
@@ -407,13 +415,14 @@ class DQNAgent(BaseAgent):
         if len(self.observation_buffer) == len(self.reward_buffer) == self.max_buffer_size:
             self.observation_memory.append(self.observation_buffer[0])
             new_actions = self.action_buffer[0].copy()
-            for j in range(self.action_buffer[0].shape[0]):
-                new_actions[j] = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[j] for i in range(self.max_buffer_size)])/max_reward
+            for j in range(self.action_buffer[0].shape[1]):
+                computed = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[0][j] for i in range(self.max_buffer_size)])
+                new_actions[0][j] = tanh(computed)/tanh(max_reward)
             self.action_memory.append(new_actions)
             if len(self.action_memory) > self.max_memory_size and \
-               len(self.observation_memory) > self.observation_memory:
-                self.observation_memory = self.observation_memory[1:]
-                self.action_memory = self.action_memory[1:]
+               len(self.observation_memory) > self.max_memory_size:
+                self.observation_memory = self.observation_memory[-self.max_memory_size:]
+                self.action_memory = self.action_memory[-self.max_memory_size:]
 
         else:
             pass
