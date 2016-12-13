@@ -225,7 +225,7 @@ class PerceptronAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        input_layer = Input(shape=(17, 11))
+        input_layer = Input(shape=(17, 13))
         flattened_input = Flatten()(input_layer)
         inner_layer = Dense(20, activation='relu')(flattened_input)
         output_layer = Dense(11, activation='tanh')(inner_layer)
@@ -243,7 +243,7 @@ class PerceptronAgent(BaseAgent):
             if r < self.epsilon:
                 actions = [random()**2 > 0.95 for i in range(11)]
             else:
-                observation = observation.reshape((1, 17, 11))
+                observation = observation.reshape((1, 17, 13))
                 pred = self.model.predict(observation)
                 actions = [i > 0 for i in pred[0]]
             self.actions = {actions_list[i]: actions[i] for i in range(11)}
@@ -255,7 +255,7 @@ class PerceptronAgent(BaseAgent):
         global actions_list
         observation = np.array(observation)
         try:
-            observation = observation.reshape((1, 11, 17))
+            observation = observation.reshape((1, 13, 17))
             actions = np.array([int(self.actions[i])*reward for i in actions_list])
             actions = actions.reshape((1, 11))
             self.model.fit(observation, actions, nb_epoch=1, verbose=0)
@@ -286,7 +286,7 @@ class BetterPerceptronAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        input_layer = Input(shape=(17, 11))
+        input_layer = Input(shape=(17, 13))
         flattened_input = Flatten()(input_layer)
         inner_layer = Dense(20, activation='relu')(flattened_input)
         output_layer = Dense(11, activation='tanh')(inner_layer)
@@ -304,7 +304,7 @@ class BetterPerceptronAgent(BaseAgent):
             if r < self.epsilon:
                 self.actions = get_random_actions(self.actions)
             else:
-                observation = observation.reshape((1, 17, 11))
+                observation = observation.reshape((1, 17, 13))
                 pred = self.model.predict(observation)
                 actions = [i > 0 for i in pred[0]]
                 self.actions = {actions_list[i]: actions[i] for i in range(11)}
@@ -316,7 +316,7 @@ class BetterPerceptronAgent(BaseAgent):
         global actions_list
         observation = np.array(observation)
         try:
-            observation = observation.reshape((1, 11, 17))
+            observation = observation.reshape((1, 13, 17))
             actions = np.array([int(self.actions[i])*reward for i in actions_list])
             actions = actions.reshape((1, 11))
             self.model.fit(observation, actions, nb_epoch=1, verbose=0)
@@ -347,7 +347,7 @@ class DQNAgent(BaseAgent):
                            starter_ammo_pack,
                            color,
                            radius)
-        #input_layer = Input(shape=(17, 11))
+        #input_layer = Input(shape=(17, 13))
         #inner_layer1 = Convolution1D(20, 5, activation='relu')(input_layer)
         #pooling1 = MaxPooling1D(2)(inner_layer1)
         #inner_layer2 = Convolution1D(20, 3, activation='relu')(pooling1)
@@ -360,19 +360,19 @@ class DQNAgent(BaseAgent):
         #self.model.compile(RMSprop(),
         #                   loss='hinge')
 
-        self.delta = 1-2e-5 #decrease coefficient of epsilon-greedy
+        self.delta = 1-1e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
 
         self.max_memory_size = 5000
         self.observation_memory = []
         self.action_memory = []
 
-        self.max_buffer_size = 150
+        self.max_buffer_size = 100
         self.observation_buffer = []
         self.action_buffer = []
         self.reward_buffer = []
 
-        self.tau = 0.98
+        self.tau = 0.97
 
         self.batch_size = 16
 
@@ -383,7 +383,7 @@ class DQNAgent(BaseAgent):
 
     def set_model(self, config):
         layer_descriptions = config.split('\n')
-        layers = [Input(shape=(17, 11))]
+        layers = [Input(shape=(17, 13))]
         prev_ind = 0
         for line in layer_descriptions:
             parameters = line.split('-')
@@ -446,7 +446,7 @@ class DQNAgent(BaseAgent):
             new_actions = self.action_buffer[0].copy()
             for j in range(self.action_buffer[0].shape[1]):
                 computed = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[0][j] for i in range(self.max_buffer_size)])
-                new_actions[0][j] = tanh(computed)/tanh(max_reward)
+                new_actions[0][j] = tanh(computed/10)/tanh(max_reward/10)
             self.action_memory.append(new_actions)
             if len(self.action_memory) > self.max_memory_size and \
                len(self.observation_memory) > self.max_memory_size:
@@ -466,7 +466,7 @@ class DQNAgent(BaseAgent):
                     #actions = [random()**2 > 0.95 for i in range(11)]
                     self.actions = get_random_actions(self.actions)
                 else:
-                    observation = observation.reshape((1, 17, 11))
+                    observation = observation.reshape((1, 17, 13))
                     pred = self.model.predict(observation)
                     actions = [i > 0 for i in pred[0]]
                     self.actions = {actions_list[i]: actions[i] for i in range(11)}
@@ -479,7 +479,7 @@ class DQNAgent(BaseAgent):
         observation = np.array(observation)
         try:
             self.t = (self.t + 1) % self.skip
-            observation = observation.reshape((1, 17, 11))
+            observation = observation.reshape((1, 17, 13))
             actions = np.array([int(self.actions[i]) for i in actions_list])
             actions = actions.reshape((1, 11))
 

@@ -39,12 +39,16 @@ class Ammo:
                 if i.is_alive and self.owner_id != i.id and dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
                     boom = True
         # deal damage to everyone who is in burst radius
+        missed = True
         if boom:
             self.alive = 0
             for i in agents:
                 if i.is_alive and dst(self.x, self.y, i.x, i.y) < self.burst + i.radius:
                     i.take_damage(self.damage, self.owner_id)
                     agents[self.owner_id-1].reward += 1
+                    missed = False
+            if missed:
+                agents[self.owner_id - 1].reward -= 0.2
             self.exploded = True
 
     def update(self, obstacles, agents):

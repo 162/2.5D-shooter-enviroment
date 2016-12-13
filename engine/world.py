@@ -200,27 +200,20 @@ class World:
         :return:
         """
         if self.agents[agent_index].name.startswith('Target'):
-            return np.zeros(shape=(self.layers+3, self.rays))
+            return np.zeros(shape=(self.layers+5, self.rays))
 
         x0 = self.agents[agent_index].x
         y0 = self.agents[agent_index].y
         a0 = self.agents[agent_index].angle
 
         angles = np.arange(-1, 1.01, self.angle_shift)
-        observation = np.zeros(shape=(self.layers+3, self.rays))
+        observation = np.zeros(shape=(self.layers+5, self.rays))
 
-        observation[-3] = get_status_vector(self.agents[agent_index].hp, 100, self.rays)
-        observation[-2] = get_status_vector(self.agents[agent_index].arm, 100, self.rays)
-        if self.agents[agent_index].active_ammo == 0:
-            v = self.agents[agent_index].ammo[0]
-            mv = 50
-        elif self.agents[agent_index].active_ammo == 1:
-            v = self.agents[agent_index].ammo[1]
-            mv = 50
-        else:
-            v = self.agents[agent_index].ammo[2]
-            mv = self.rays
-        observation[-1] = get_status_vector(v, mv, self.rays)
+        observation[-5] = get_status_vector(self.agents[agent_index].hp, 100, self.rays)
+        observation[-4] = get_status_vector(self.agents[agent_index].arm, 100, self.rays)
+        observation[-3] = get_status_vector(self.agents[agent_index].ammo[0], 50, self.rays)
+        observation[-2] = get_status_vector(self.agents[agent_index].ammo[1], 50, self.rays)
+        observation[-1] = get_status_vector(self.agents[agent_index].ammo[2], self.rays, self.rays)
 
         walls_ = [(i.distance_to_point(x0, y0) < 1.1*self.vision_range) for i in self.obstacles]
         walls = []
