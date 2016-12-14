@@ -446,7 +446,7 @@ class DQNAgent(BaseAgent):
             new_actions = self.action_buffer[0].copy()
             for j in range(self.action_buffer[0].shape[1]):
                 computed = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[0][j] for i in range(self.max_buffer_size)])
-                new_actions[0][j] = tanh(computed/10)/tanh(max_reward/10)
+                new_actions[0][j] = tanh(computed)/tanh(max_reward)
             self.action_memory.append(new_actions)
             if len(self.action_memory) > self.max_memory_size and \
                len(self.observation_memory) > self.max_memory_size:

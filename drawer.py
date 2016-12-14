@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-num_of_logs = 1413
+num_of_logs = 1021
 
 kills, deaths, diffs = {}, {}, {}
 

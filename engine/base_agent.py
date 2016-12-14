@@ -220,6 +220,8 @@ class BaseAgent:
             return self.weapons[self.active_weapon].shoot((self.x+self.radius*cos(self.angle),
                                                            self.y+self.radius*sin(self.angle)), angle=self.angle)
         else:
+            if self.ammo[self.active_ammo] < self.ammo_needed_to_shoot:
+                self.reward -= 0.5
             return []
 
     def take_bonus(self,
