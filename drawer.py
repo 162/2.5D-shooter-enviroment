@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-num_of_logs = 1021
+num_of_logs = 1241
 
 kills, deaths, diffs = {}, {}, {}
 
@@ -20,7 +20,7 @@ for i in range(1, num_of_logs+1):
                 diffs[words[1]] = [float(words[4])]
 
 
-window = 200
+window = 50
 meaned_kills, meaned_deaths, meaned_diffs = {i:[] for i in kills.keys()}, \
                                             {i:[] for i in kills.keys()}, \
                                             {i:[] for i in kills.keys()}

@@ -118,7 +118,6 @@ class BaseAgent:
         it`s armor value and rest lowers his health. If agent dies, this method writes
         about his death to journal.
         """
-        self.reward -= 0
         to_armor = min(self.arm, amount/2)
         to_hp = amount - to_armor
         self.arm -= to_armor
@@ -126,6 +125,7 @@ class BaseAgent:
         if self.hp <= 0:
             print self.name, 'is dead!'
             self.deaths += 1
+            self.reward -=1
             if dealer != self.id:
                 self.killed_by = dealer
             else:
@@ -164,6 +164,7 @@ class BaseAgent:
         """
         Applying actions
         """
+        self.reward = 0.1
 
         for wpn in self.weapons:
             wpn.update()
@@ -221,7 +222,7 @@ class BaseAgent:
                                                            self.y+self.radius*sin(self.angle)), angle=self.angle)
         else:
             if self.ammo[self.active_ammo] < self.ammo_needed_to_shoot:
-                self.reward -= 0.5
+                self.reward -= 0.25
             return []
 
     def take_bonus(self,

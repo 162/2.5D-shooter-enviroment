@@ -363,7 +363,7 @@ class DQNAgent(BaseAgent):
         self.delta = 1-1e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
 
-        self.max_memory_size = 5000
+        self.max_memory_size = 15000
         self.observation_memory = []
         self.action_memory = []
 
@@ -374,10 +374,12 @@ class DQNAgent(BaseAgent):
 
         self.tau = 0.97
 
-        self.batch_size = 16
+        self.batch_size = 32
 
         self.skip = 5
         self.t = 0
+
+        self.episode_rewards = []
 
         self.age = 0
 
@@ -427,6 +429,9 @@ class DQNAgent(BaseAgent):
         self.observation_buffer = []
         self.action_buffer = []
         self.reward_buffer = []
+        with open('rewards_log/'+self.name+str(self.age)+'.log', 'w') as f:
+            f.write(' '.join([str(i) for i in self.episode_rewards]))
+        self.episode_rewards = []
 
     def bufferize(self, observation, reward, actions):
         self.observation_buffer.append(observation)
@@ -442,17 +447,19 @@ class DQNAgent(BaseAgent):
     def update_memory(self):
         max_reward = sum([self.tau**i for i in range(self.max_buffer_size)])
         if len(self.observation_buffer) == len(self.reward_buffer) == self.max_buffer_size:
-            self.observation_memory.append(self.observation_buffer[0])
             new_actions = self.action_buffer[0].copy()
-            for j in range(self.action_buffer[0].shape[1]):
-                computed = sum([(self.tau**i)*self.reward_buffer[i]*new_actions[0][j] for i in range(self.max_buffer_size)])
-                new_actions[0][j] = tanh(computed)/tanh(max_reward)
-            self.action_memory.append(new_actions)
-            if len(self.action_memory) > self.max_memory_size and \
-               len(self.observation_memory) > self.max_memory_size:
-                self.observation_memory = self.observation_memory[-self.max_memory_size:]
-                self.action_memory = self.action_memory[-self.max_memory_size:]
-
+            total_reward = sum([(self.tau**i)*self.reward_buffer[i] for i in range(self.max_buffer_size)])
+            self.episode_rewards.append(tanh(total_reward)/tanh(max_reward))
+            if total_reward != 0:
+                for j in range(self.action_buffer[0].shape[1]):
+                    computed = total_reward*new_actions[0][j]
+                    new_actions[0][j] = tanh(computed)/tanh(max_reward)
+                self.action_memory.append(new_actions)
+                self.observation_memory.append(self.observation_buffer[0])
+                if len(self.action_memory) > self.max_memory_size and \
+                   len(self.observation_memory) > self.max_memory_size:
+                    self.observation_memory = self.observation_memory[-self.max_memory_size:]
+                    self.action_memory = self.action_memory[-self.max_memory_size:]
         else:
             pass
 
@@ -468,7 +475,7 @@ class DQNAgent(BaseAgent):
                 else:
                     observation = observation.reshape((1, 17, 13))
                     pred = self.model.predict(observation)
-                    actions = [i > 0 for i in pred[0]]
+                    actions = [i > 0.1 for i in pred[0]]
                     self.actions = {actions_list[i]: actions[i] for i in range(11)}
                 self.epsilon *= self.delta
         except:

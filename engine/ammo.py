@@ -48,7 +48,7 @@ class Ammo:
                     agents[self.owner_id-1].reward += 1
                     missed = False
             if missed:
-                agents[self.owner_id - 1].reward -= 0.2
+                agents[self.owner_id - 1].reward -= 0.25
             self.exploded = True
 
     def update(self, obstacles, agents):

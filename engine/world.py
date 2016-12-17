@@ -15,7 +15,7 @@ journal = []
 stats_names = ['Pos', 'Name', 'K', 'D', 'K-D', 'K/D', 'HP', 'A', 'B', 'S', 'R']
 
 MAX_SCORE = 50
-EPISODE_DURATION = 1500
+EPISODE_DURATION = 1000
 
 
 def get_status_vector(value, max_value, size):
@@ -353,5 +353,10 @@ class World:
             self.round += 1
             print 'ROUND', self.round
             self.ticks = 0
+            for i in self.agents:
+                try:
+                    print i.name, i.epsilon
+                except:
+                    pass
         # if self.round>1:
         #    1/0
