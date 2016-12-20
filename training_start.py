@@ -18,9 +18,8 @@ flags = pygame.DOUBLEBUF | pygame.HWSURFACE
 screen = pygame.display.set_mode(DISPLAY, flags)
 
 # This has to be done somewhere inside world loading
-# It`s applying keyboard mode to the only agent
 
-w.agents[0].name = 'DQN5'
+w.agents[0].name = 'SSbot'
 w.agents[1].name = 'Target1'
 w.agents[2].name = 'Target2'
 w.agents[3].name = 'Target3'

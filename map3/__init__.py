@@ -32,28 +32,14 @@ default_parameters = {'max_velocity': 1.2,
                       'radius': 12}
 
 # Agents generating (without decision functions)
-map_agents = [('DQNAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy()),
-              ('EmptyAgent', default_parameters.copy())]
+map_agents = [('DQNAgent', default_parameters.copy())]
 
-
-map_agents[1][1]['color'] = '#555555'
-map_agents[1][1]['spawn_point'] = (750, 250)
-
-map_agents[4][1]['color'] = '#555555'
-map_agents[4][1]['spawn_point'] = (350, 450)
-
-
-map_agents[2][1]['color'] = '#555555'
-map_agents[2][1]['spawn_point'] = (550, 400)
-
-
-map_agents[3][1]['color'] = '#555555'
-map_agents[3][1]['spawn_point'] = (550, 250)
 
 
 
 # Bonuses spawn points with timeouts
-map_bonuses = [[], [], [], [], []]
+map_bonuses = [[(300, 200, 250), (300, 335, 250), (300, 470, 250), (540, 200, 250), (540, 470, 250), (780, 200, 250), (780, 335, 250), (780, 470, 250)],  # bullet packs
+               [(350, 250, 250), (350, 420, 250), (730, 250, 250), (730, 420, 250)],  # shells packs
+               [(350, 335, 250), (730, 335, 250)],  # rockets packs
+               [(540, 250, 250)],  # medkits
+               [(540, 420, 250)]]  # armor vests
