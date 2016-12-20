@@ -363,7 +363,7 @@ class DQNAgent(BaseAgent):
         self.delta = 1-1e-5 #decrease coefficient of epsilon-greedy
         self.epsilon = 1 #probability of random action
 
-        self.max_memory_size = 15000
+        self.max_memory_size = 50000
         self.observation_memory = []
         self.action_memory = []
 
@@ -374,7 +374,7 @@ class DQNAgent(BaseAgent):
 
         self.tau = 0.97
 
-        self.batch_size = 32
+        self.batch_size = 16
 
         self.skip = 5
         self.t = 0
@@ -382,6 +382,8 @@ class DQNAgent(BaseAgent):
         self.episode_rewards = []
 
         self.age = 0
+
+        self.to_learn = True
 
     def set_model(self, config):
         layer_descriptions = config.split('\n')
@@ -424,13 +426,14 @@ class DQNAgent(BaseAgent):
         self.is_alive = True
         self.killed_by = -1
         self.to_resurrect = -1
-        self.model.save('saved/'+self.name+str(self.age)+'.h5')
         self.age += 1
         self.observation_buffer = []
         self.action_buffer = []
         self.reward_buffer = []
-        with open('rewards_log/'+self.name+str(self.age)+'.log', 'w') as f:
-            f.write(' '.join([str(i) for i in self.episode_rewards]))
+        if self.to_learn:
+            self.model.save('saved/' + self.name + str(self.age) + '.h5')
+            with open('rewards_log/'+self.name+str(self.age)+'.log', 'w') as f:
+                f.write(' '.join([str(i) for i in self.episode_rewards]))
         self.episode_rewards = []
 
     def bufferize(self, observation, reward, actions):
@@ -469,7 +472,7 @@ class DQNAgent(BaseAgent):
         try:
             r = random()
             if self.t == 0:
-                if r < self.epsilon:
+                if r < self.epsilon and self.to_learn:
                     #actions = [random()**2 > 0.95 for i in range(11)]
                     self.actions = get_random_actions(self.actions)
                 else:
@@ -485,18 +488,19 @@ class DQNAgent(BaseAgent):
         global actions_list
         observation = np.array(observation)
         try:
-            self.t = (self.t + 1) % self.skip
-            observation = observation.reshape((1, 17, 13))
-            actions = np.array([int(self.actions[i]) for i in actions_list])
-            actions = actions.reshape((1, 11))
+            if self.to_learn:
+                self.t = (self.t + 1) % self.skip
+                observation = observation.reshape((1, 17, 13))
+                actions = np.array([int(self.actions[i]) for i in actions_list])
+                actions = actions.reshape((1, 11))
 
-            self.bufferize(observation, reward, actions)
-            self.update_memory()
-            if self.batch_size < len(self.action_memory) and \
-               self.batch_size < len(self.observation_memory) and \
-               self.t == 0:
-                self.model.fit_generator(sample_from_memory(self.observation_memory, self.action_memory, self.batch_size),
-                                         samples_per_epoch=self.batch_size, nb_epoch=1, verbose=0)
+                self.bufferize(observation, reward, actions)
+                self.update_memory()
+                if self.batch_size < len(self.action_memory) and \
+                   self.batch_size < len(self.observation_memory) and \
+                   self.t == 0:
+                    self.model.fit_generator(sample_from_memory(self.observation_memory, self.action_memory, self.batch_size),
+                                             samples_per_epoch=self.batch_size, nb_epoch=1, verbose=0)
         except:
             print 'something went wrong'
 

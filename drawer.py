@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-
-num_of_logs = 1241
+num_of_logs = 1000
 
 kills, deaths, diffs = {}, {}, {}
 
@@ -20,10 +20,33 @@ for i in range(1, num_of_logs+1):
                 diffs[words[1]] = [float(words[4])]
 
 
-window = 50
+window = 200
 meaned_kills, meaned_deaths, meaned_diffs = {i:[] for i in kills.keys()}, \
                                             {i:[] for i in kills.keys()}, \
                                             {i:[] for i in kills.keys()}
+plt.title('2700-kills')
+plt.hist(kills['2700'], bins=np.unique(kills['2700']).shape[0])
+plt.show()
+plt.title('Random-kills')
+plt.hist(kills['Random'], bins=np.unique(kills['Random']).shape[0])
+plt.show()
+
+plt.title('2700-deaths')
+plt.hist(deaths['2700'], bins=np.unique(deaths['2700']).shape[0])
+plt.show()
+plt.title('Random-deaths')
+plt.hist(deaths['Random'], bins=np.unique(deaths['Random']).shape[0])
+plt.show()
+
+plt.title('2700-diffs')
+plt.hist(diffs['2700'], bins=np.unique(diffs['2700']).shape[0])
+plt.show()
+plt.title('Random-diffs')
+plt.hist(diffs['Random'], bins=np.unique(diffs['Random']).shape[0])
+plt.show()
+
+
+
 for name in kills:
     #if not name.startswith('Target'):
     for i in range(window, num_of_logs):
@@ -69,4 +92,3 @@ plt.legend(meaned_diffs.keys())
 plt.title('Mean diffs')
 plt.show()
 
-#plt.hist()

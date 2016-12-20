@@ -7,7 +7,7 @@ import cProfile
 profiler = cProfile.Profile()
 profiler.enable()
 
-w = World(map_name='map1')
+w = World(map_name='map_duel')
 w.load()
 
 DISPLAY = (w.width, w.height)
@@ -20,30 +20,22 @@ screen = pygame.display.set_mode(DISPLAY, flags)
 # This has to be done somewhere inside world loading
 # It`s applying keyboard mode to the only agent
 
-w.agents[0].name = 'P4'
+w.agents[0].name = '2700'
+#w.agents[1].name = '1100'
+#w.agents[2].name = '1600'
 w.agents[1].name = 'Random'
-#w.agents[6].name = 'P2'
-w.agents[3].name = 'DQN5'
-w.agents[4].name = 'Target1'
-w.agents[5].name = 'Target2'
-w.agents[2].name = 'Target3'
-#w.agents[7].name = 'DQN4'
-#w.agents[8].name = 'DQN3'
-#w.agents[9].name = 'DQN4'
 
-
-with open('configs/P4.conf', 'r') as f:
-    w.agents[0].set_model(f.read())
-#with open('configs/P2.conf', 'r') as f:
-#    w.agents[6].set_model(f.read())
-with open('configs/DQN5.conf', 'r') as f:
-    w.agents[3].set_model(f.read())
-#with open('configs/DQN4.conf', 'r') as f:
-#    w.agents[7].set_model(f.read())
-#with open('configs/DQN3.conf', 'r') as f:
-#    w.agents[8].set_model(f.read())
-#with open('configs/DQN4.conf', 'r') as f:
-#    w.agents[9].set_model(f.read())
+w.agents[0].load('saved/DQN52753.h5')
+w.agents[0].to_learn = True
+w.agents[0].epsilon = 0.3
+w.agents[0].delta = 1-5e-6
+w.agents[0].skip = 5
+#w.agents[1].load('saved/DQN51100.h5')
+#w.agents[1].to_learn = False
+#w.agents[1].epsilon = 0.05
+#w.agents[2].load('saved/DQN51600.h5')
+#w.agents[2].to_learn = False
+#w.agents[2].epsilon = 0.05
 
 while 1:
     #try:

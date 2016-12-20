@@ -111,7 +111,7 @@ class World:
 
     def reset(self):
         for i in self.agents:
-            x, y, angle = randint(300, 780), randint(200, 520), random()*6.29
+            x, y, angle = randint(300, 780), randint(200, 480), random()*6.29
             i.spawn_angle = angle
             i.spawn_point = (x, y)
             i.reload()
