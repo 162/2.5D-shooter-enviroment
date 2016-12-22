@@ -164,7 +164,7 @@ class BaseAgent:
         """
         Applying actions
         """
-        self.reward = 0.1
+        self.reward = 0.05
 
         for wpn in self.weapons:
             wpn.update()

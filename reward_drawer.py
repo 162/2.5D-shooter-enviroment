@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-episodes = 2425
+episodes = 3400
 
 mean_rewards = []
 all_rewards = []
 
-name = 'DQN5'
+name = 'SSbot'
 
 for i in range(1, episodes+1):
     with open('rewards_log/' + name + str(i) + '.log', 'r') as f:
@@ -19,7 +19,7 @@ for i in range(1, episodes+1):
 
 points = range(1, len(all_rewards)+1)
 plt.plot(points, all_rewards)
-plt.title('all')
+plt.title('rewards by step')
 z = np.polyfit(points, all_rewards, 2)
 p = np.poly1d(z)
 plt.plot(points, p(points), "r", lw=3)
@@ -30,7 +30,7 @@ plt.plot(points, mean_rewards)
 z = np.polyfit(points, mean_rewards, 2)
 p = np.poly1d(z)
 plt.plot(points, p(points), "r", lw=3)
-plt.title('mean')
+plt.title('rewards by episode')
 plt.show()
 
 window = 10000
@@ -43,7 +43,7 @@ rw = rw.reshape((size, window))
 points = range(size)
 slope_rewards = [np.mean(rw[i]) for i in points]
 plt.plot(points, slope_rewards)
-plt.title('average')
+plt.title('average rewards')
 z = np.polyfit(points, slope_rewards, 2)
 p = np.poly1d(z)
 plt.plot(points, p(points), "r", lw=3)

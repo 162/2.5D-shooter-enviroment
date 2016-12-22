@@ -70,6 +70,8 @@ class World:
         self.ticks = 0
         self.episode_duration = 1000
 
+        self.spawns = []
+
     def load(self):
         map_size, map_agents, map_walls, map_columns, map_bonuses = None, None, None, None, None
         exec('from '+self.name+' import map_size, map_agents, map_walls, map_columns, map_bonuses')
@@ -111,7 +113,9 @@ class World:
 
     def reset(self):
         for i in self.agents:
-            x, y, angle = randint(300, 780), randint(200, 480), random()*6.29
+            x, y, angle = randint(self.spawns[0], self.spawns[1]), \
+                          randint(self.spawns[2], self.spawns[3]), \
+                          random()*6.29
             i.spawn_angle = angle
             i.spawn_point = (x, y)
             i.reload()

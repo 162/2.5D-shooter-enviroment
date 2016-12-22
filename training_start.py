@@ -25,19 +25,20 @@ w.agents[2].name = 'Target2'
 w.agents[3].name = 'Target3'
 w.agents[4].name = 'Target4'
 
+w.spawns = [50, 490, 50, 320]
 
-
+w.episode_duration = 1000
 
 with open('configs/DQN5.conf', 'r') as f:
     w.agents[0].set_model(f.read())
 
 
 while 1:
-    #try:
-    if 1:
-        w.tick()
-        w.draw(screen)
-        pygame.display.update()
-    #except:
-    #    profiler.print_stats(sort=1)
-    #    break
+    try:
+        if 1:
+            w.tick()
+            w.draw(screen)
+            pygame.display.update()
+    except:
+        profiler.print_stats(sort=1)
+        break

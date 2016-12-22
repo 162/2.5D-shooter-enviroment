@@ -1,19 +1,16 @@
-map_size = [1080, 720]
+map_size = [540, 370]
 
 # walls color
 clr = '#888888'
 
 # walls and columns positions
 map_walls = []
-map_walls.append(((540, 170), 1080, 20, clr))
-map_walls.append(((540, 550), 1080, 20, clr))
-map_walls.append(((910, 360), 20, 720, clr))
-map_walls.append(((170, 360), 20, 720, clr))
+map_walls.append(((270, 10), 540, 20, clr))
+map_walls.append(((270, 360), 540, 20, clr))
+map_walls.append(((530, 190), 20, 370, clr))
+map_walls.append(((10, 190), 20, 370, clr))
 
-map_columns = [((150, 150), 30, clr),
-               ((930, 150), 30, clr),
-               ((930, 570), 30, clr),
-               ((150, 570), 30, clr)]
+map_columns = [((0, 0), 30, clr)]
                #((200, 200), 20, clr),
                #((880, 200), 20, clr),
                #((880, 520), 20, clr),
@@ -24,7 +21,7 @@ default_parameters = {'max_velocity': 1.2,
                       'turn_speed': 0.05,
                       'max_health': 100,
                       'max_armor': 100,
-                      'spawn_point': (300, 200),
+                      'spawn_point': (130, 50),
                       'starting_angle': 0,
                       'starter_weapon_pack': None,
                       'starter_ammo_pack': None,
@@ -40,18 +37,18 @@ map_agents = [('DQNAgent', default_parameters.copy()),
 
 
 map_agents[1][1]['color'] = '#555555'
-map_agents[1][1]['spawn_point'] = (750, 250)
+map_agents[1][1]['spawn_point'] = (420, 80)
 
 map_agents[4][1]['color'] = '#555555'
-map_agents[4][1]['spawn_point'] = (350, 450)
+map_agents[4][1]['spawn_point'] = (180, 280)
 
 
 map_agents[2][1]['color'] = '#555555'
-map_agents[2][1]['spawn_point'] = (550, 400)
+map_agents[2][1]['spawn_point'] = (380, 230)
 
 
 map_agents[3][1]['color'] = '#555555'
-map_agents[3][1]['spawn_point'] = (550, 250)
+map_agents[3][1]['spawn_point'] = (380, 80)
 
 
 
